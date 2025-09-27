@@ -22,7 +22,7 @@ export class UserController {
   @ApiResponse({ status: 400, description: '请求参数错误' })
   create(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.userService.create(createUserDto);
-  }
+  } 
 
   /**
    * 获取所有用户

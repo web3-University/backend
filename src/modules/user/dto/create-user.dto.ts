@@ -33,4 +33,14 @@ export class CreateUserDto {
   @IsString({ message: '密码必须是字符串' })
   @MinLength(6, { message: '密码长度不能少于6位' })
   password: string;
+
+
+   
+  @ApiProperty({
+    description: '钱包地址',
+    example: '0x1234567890123456789012345678901234567890'
+  })
+  @IsNotEmpty({ message: '钱包地址不能为空' })
+  @IsString({ message: '钱包地址必须是字符串' })  
+  walletAddress: string;
 }

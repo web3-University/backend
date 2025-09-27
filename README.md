@@ -644,7 +644,141 @@ pnpm run start:prod
 8. **Gas费优化**：合理设计智能合约，减少Gas消耗
 9. **多链支持**：后续可扩展支持Polygon、BSC等链
 
+## 实体设计分析报告
+
+### 📊 原始实体设计问题分析
+
+#### ❌ 主要问题
+1. **缺少Web3核心字段**：原始设计缺少`walletAddress`等Web3去中心化平台必需字段
+2. **实体关系不完整**：缺少NFT证书、支付记录、学习进度等核心实体
+3. **字段设计不符合Web3特性**：缺少价格、分类、IPFS存储等字段
+4. **数据类型选择不当**：价格字段应使用字符串存储大数
+
+#### ✅ 改进后的实体设计
+
+### 🏗️ 核心实体结构
+
+#### 1. User实体（用户）
+```typescript
+- walletAddress: string (主要标识符)
+- username: string
+- email?: string
+- role: 'student' | 'instructor' | 'admin'
+- isVerified: boolean
+- nonce?: string (签名验证)
+- 学习统计字段
+```
+
+#### 2. Teacher实体（讲师）
+```typescript
+- walletAddress: string
+- specializations?: string[]
+- level: 'junior' | 'senior' | 'expert'
+- rating: number
+- socialLinks?: object
+```
+
+#### 3. Course实体（课程）
+```typescript
+- instructorWallet: string
+- category: string
+- level: 'beginner' | 'intermediate' | 'advanced'
+- price: string (YD币价格)
+- priceInUSD: number
+- nftContract?: string
+- isOnChain: boolean
+- resources?: object
+```
+
+#### 4. Lesson实体（课时）
+```typescript
+- courseId: number
+- videoUrl?: string (IPFS链接)
+- videoCid?: string
+- type: 'video' | 'text' | 'quiz' | 'assignment'
+- status: 'draft' | 'published' | 'archived'
+```
+
+#### 5. NFTCertificate实体（NFT证书）
+```typescript
+- tokenId: string
+- contractAddress: string
+- walletAddress: string
+- metadata: string (IPFS链接)
+- image: string (IPFS链接)
+- transactionHash: string
+```
+
+#### 6. Payment实体（支付记录）
+```typescript
+- courseId: number
+- walletAddress: string
+- amount: string (YD币数量)
+- transactionHash: string
+- status: 'pending' | 'confirmed' | 'failed' | 'refunded'
+```
+
+#### 7. LearningProgress实体（学习进度）
+```typescript
+- walletAddress: string
+- courseId: number
+- lessonId: number
+- status: 'not_started' | 'in_progress' | 'completed'
+- completionPercentage: number
+```
+
+#### 8. Notification实体（通知）
+```typescript
+- walletAddress: string
+- type: 'course_update' | 'payment_success' | 'certificate_minted'
+- priority: 'low' | 'medium' | 'high' | 'urgent'
+- isRead: boolean
+```
+
+### 🔗 实体关系设计
+
+```
+User (1) ←→ (N) Course
+User (1) ←→ (N) NFTCertificate
+User (1) ←→ (N) Payment
+User (1) ←→ (N) LearningProgress
+User (1) ←→ (N) Notification
+
+Course (1) ←→ (N) Lesson
+Course (1) ←→ (N) NFTCertificate
+Course (1) ←→ (N) Payment
+Course (1) ←→ (N) LearningProgress
+
+Teacher (1) ←→ (N) Course (通过instructorWallet字段关联)
+```
+
+### 📝 设计决策说明
+
+#### 为什么不需要Teacher_Course关联表？
+
+1. **一对一关系**：每个课程只有一个主要讲师
+2. **简化查询**：直接在Course表中存储讲师信息，避免JOIN查询
+3. **性能优化**：减少数据库查询复杂度
+4. **Web3特性**：钱包地址作为唯一标识，无需额外关联
+5. **数据冗余合理**：讲师姓名和头像在Course表中冗余存储，提高查询效率
+
+### 🎯 设计优势
+
+1. **Web3原生支持**：所有实体都支持钱包地址作为主要标识符
+2. **去中心化存储**：使用IPFS链接存储视频、图片等资源
+3. **区块链集成**：支持NFT证书、YD币支付等区块链功能
+4. **完整的学习流程**：从课程购买到证书获得的完整链路
+5. **灵活的权限管理**：支持多角色和权限控制
+6. **数据完整性**：使用合适的数据类型和约束
+
 ## 更新日志
+
+### v1.1.0 (2024-01-15)
+- ✅ 重新设计所有实体结构
+- ✅ 添加Web3去中心化特性支持
+- ✅ 完善实体间关系设计
+- ✅ 添加NFT证书、支付、学习进度等核心实体
+- ✅ 优化数据类型和字段设计
 
 ### v1.0.0 (2024-01-15)
 - 初始项目结构
