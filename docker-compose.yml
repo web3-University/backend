@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-w3college}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: '--encoding=UTF-8'
+    ports:
+      - '${DB_PORT:-5432}:5432'
+    volumes:
+      - ./localStoreData/postgres:/var/lib/postgresql/data
+    networks:
+      - w3college-network
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - ./localStoreData/redis:/data
+    networks:
+      - w3college-network
+    command: redis-server --appendonly yes
+
+networks:
+  w3college-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

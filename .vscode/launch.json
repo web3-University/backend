@@ -1,0 +1,20 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "debug w3college-server",
+      // 指定调试器类型为node
+      "type": "node",
+      // 启动新进程调试，而不是附加到当前进程
+      "request": "launch",
+      // 跳过node_internals目录，Nodejs内部文件
+      "skipFiles": ["<node_internals>/**"],
+      // 传递给运行时可执行文件的参数
+      "runtimeArgs": ["start:dev"],
+      // 指定运行时可执行文件为yarn，而不是Nodejs
+      "runtimeExecutable": "yarn",
+      // 在集成终端显示
+      "console": "integratedTerminal"
+    }
+  ]
+}
