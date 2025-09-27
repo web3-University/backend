@@ -1,15 +1,25 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserModule } from './modules/user/user.module';
+import { StorageModule } from './modules/storage/storage.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { createDatabaseConfig } from './config/database.config';
+import { MulterModule } from '@nestjs/platform-express';
+import { UploadController } from './modules/storage/storage.controller';
 
 /**
  * 应用主模块
  * 负责导入所有必要的模块和配置
  */
 @Module({
+  controllers: [UploadController],
   imports: [
+    MulterModule.register({
+      limits: {
+        fileSize: 100 * 1024 * 1024, // 100MB
+      },
+    }),
+    StorageModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: createDatabaseConfig,
@@ -24,4 +34,4 @@ import { createDatabaseConfig } from './config/database.config';
     UserModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }

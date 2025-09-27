@@ -1,7 +1,7 @@
 # Web3大学后端API接口文档
 
 ## 项目概述
-Web3大学是一个完全去中心化的Web3教育平台，基于区块链技术构建。用户通过Web3钱包登录，使用YD币支付课程费用，获得NFT证书。所有数据存储在web3.storage IPFS上，课程和证书都通过智能合约管理，实现真正的去中心化教育。
+Web3大学是一个完全去中心化的Web3教育平台，基于区块链技术构建。用户通过Web3钱包登录，使用YD币支付课程费用，获得NFT证书。所有数据存储在Storacha IPFS上，课程和证书都通过智能合约管理，实现真正的去中心化教育。
 
 ## 技术栈
 - **框架**: NestJS
@@ -10,7 +10,7 @@ Web3大学是一个完全去中心化的Web3教育平台，基于区块链技术
 - **API文档**: Swagger
 - **认证**: Web3钱包签名验证
 - **区块链**: Ethereum
-- **存储**: web3.storage IPFS (去中心化存储)
+- **存储**: Storacha IPFS (去中心化存储)
 - **支付**: YD币
 - **证书**: NFT (ERC-721)
 - **Web3库**: wagmi (React Hooks for Ethereum)
@@ -23,6 +23,7 @@ src/
 │   ├── auth/           # 认证模块
 │   ├── course/         # 课程管理模块
 │   ├── lesson/         # 课时管理模块
+│   ├── storage/        # Web3存储模块
 │   ├── certificate/    # NFT证书模块
 │   ├── payment/        # YD币支付模块
 │   ├── notification/   # 通知模块
@@ -225,7 +226,60 @@ POST /api/lessons/create
 }
 ```
 
-### 5. NFT证书模块 (NFT Certificate Module)
+### 5. Web3存储模块 (Storage Module)
+**基础路径**: `/api/storage`
+
+| 方法 | 路径 | 功能 | 描述 |
+|------|------|------|------|
+| POST | `/upload` | 上传文件 | 上传单个文件到IPFS |
+| POST | `/upload/batch` | 批量上传 | 批量上传文件到IPFS |
+| POST | `/upload/json` | 上传JSON | 上传JSON数据到IPFS |
+| GET | `/info` | 获取文件信息 | 通过CID获取文件信息 |
+| GET | `/url` | 生成URL | 生成IPFS访问URL |
+| GET | `/validate` | 验证CID | 验证CID格式 |
+
+**请求/响应示例**:
+```typescript
+// 上传单个文件
+POST /api/storage/upload
+Content-Type: multipart/form-data
+{
+  "file": "file_data",
+  "name": "course-video.mp4",
+  "type": "video/mp4",
+  "metadata": {
+    "courseId": 1,
+    "lessonId": 1
+  }
+}
+
+// 响应
+{
+  "cid": "QmXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
+  "url": "https://w3s.link/ipfs/QmXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
+  "size": 1024000,
+  "type": "video/mp4"
+}
+
+// 上传JSON数据
+POST /api/storage/upload/json
+{
+  "name": "Solidity智能合约开发证书",
+  "description": "完成Solidity智能合约开发课程",
+  "attributes": [
+    {"trait_type": "课程", "value": "Solidity智能合约开发"},
+    {"trait_type": "分数", "value": "95"}
+  ]
+}
+
+// 生成IPFS URL
+GET /api/storage/url?cid=QmXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx&filename=video.mp4
+{
+  "url": "https://w3s.link/ipfs/QmXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx/video.mp4"
+}
+```
+
+### 6. NFT证书模块 (NFT Certificate Module)
 **基础路径**: `/api/certificates`
 
 | 方法 | 路径 | 功能 | 描述 |
@@ -276,7 +330,7 @@ GET /api/certificates/nft-detail?nftId=1&walletAddress=0x742d35Cc6634C0532925a3b
 }
 ```
 
-### 6. YD币支付模块 (YD Token Payment Module)
+### 7. YD币支付模块 (YD Token Payment Module)
 **基础路径**: `/api/payments`
 
 | 方法 | 路径 | 功能 | 描述 |
@@ -329,7 +383,7 @@ POST /api/payments/yd-payment
 }
 ```
 
-### 7. 通知模块 (Notification Module)
+### 8. 通知模块 (Notification Module)
 **基础路径**: `/api/notifications`
 
 | 方法 | 路径 | 功能 | 描述 |
@@ -357,7 +411,7 @@ POST /api/notifications/send
 }
 ```
 
-### 8. 社区模块 (Community Module)
+### 9. 社区模块 (Community Module)
 **基础路径**: `/api/community`
 
 | 方法 | 路径 | 功能 | 描述 |
@@ -384,7 +438,7 @@ POST /api/community/posts
 }
 ```
 
-### 9. 管理员模块 (Admin Module)
+### 10. 管理员模块 (Admin Module)
 **基础路径**: `/api/admin`
 
 | 方法 | 路径 | 功能 | 描述 |
@@ -508,6 +562,7 @@ interface Payment {
 2. 🔄 认证模块
 3. 📋 课程管理模块
 4. 📋 课时管理模块
+5. 📋 Web3存储模块
 
 ### 第二阶段：核心功能
 1. 📋 NFT证书模块
@@ -542,9 +597,11 @@ DATABASE_NAME=web3_university
 # 签名验证配置
 SIGNATURE_TIMEOUT=300000 # 5分钟签名有效期（毫秒）
 
-# Web3.storage配置
-WEB3_STORAGE_TOKEN=your_web3_storage_token
-WEB3_STORAGE_GATEWAY=https://w3s.link
+# IPFS存储配置
+# 选择存储方式：simple (免费) 或 storacha (需要钱包认证)
+STORAGE_TYPE=simple
+IPFS_GATEWAY=https://ipfs.io
+STORACHA_GATEWAY=https://w3s.link
 
 # YD币合约配置
 YD_TOKEN_CONTRACT=0x... # YD币合约地址
@@ -577,13 +634,13 @@ pnpm run start:prod
 6. **区块链集成**：
    - 支持YD币支付
    - NFT证书铸造和管理
-   - web3.storage IPFS去中心化存储
+   - Storacha IPFS去中心化存储
    - 智能合约交互
 7. **去中心化特性**：
    - 用户通过钱包地址标识
    - 所有重要数据上链存储
    - 支持NFT证书转移和交易
-   - 课程内容存储在web3.storage IPFS
+   - 课程内容存储在Storacha IPFS
 8. **Gas费优化**：合理设计智能合约，减少Gas消耗
 9. **多链支持**：后续可扩展支持Polygon、BSC等链
 
