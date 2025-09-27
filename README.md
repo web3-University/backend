@@ -115,6 +115,10 @@ pnpm run build
 pnpm run start:prod
 ```
 
+## API接口设计
+
+[项目设计文档](./project-design.md)
+
 ### API文档
 
 启动项目后访问：`http://localhost:3000/api` 查看Swagger API文档
