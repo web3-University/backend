@@ -1,73 +1,132 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+
 Globals:
   Function:
     Timeout: 30
     MemorySize: 1024
     Runtime: nodejs20.x
-    Architectures: ['arm64']
-    EphemeralStorage:
-      Size: 512
-  Api:
-    OpenApiVersion: '2.0'
-    Cors:
-      AllowMethods: "'*'"
-      AllowHeaders: "'Content-Type,Authorization'"
-      AllowOrigin: "'*'"
-      MaxAge: 600
+    Architectures: ['arm64']  # Node.js 20.x 只支持 arm64
+    Environment:
+      Variables:
+        NODE_ENV: !Ref Environment
 
 Resources:
-  Api:
-    Type: AWS::Serverless::Api
+  # Lambda Layer for node_modules
+  NodeModulesLayer:
+    Type: AWS::Serverless::LayerVersion
     Properties:
-      StageName: dev
-      Auth:
-        DefaultAuthorizer: NONE
-      Cors:
-        AllowMethods: "'*'"
-        AllowHeaders: "'Content-Type,Authorization'"
-        AllowOrigin: "'*'"
-        MaxAge: 600
+      LayerName: !Sub "${AWS::StackName}-node-modules"
+      Description: Node.js dependencies layer
+      ContentUri: layer/
+      CompatibleRuntimes:
+        - nodejs20.x
+      CompatibleArchitectures:
+        - arm64
 
+  # CloudWatch Log Group for Lambda
+  LambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-nestjs-function"
+      RetentionInDays: 14
+
+  # Main Lambda Function
   NestjsFunction:
     Type: AWS::Serverless::Function
+    DependsOn: LambdaLogGroup
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-nestjs-function"
       Handler: lambda.handler
       CodeUri: dist/
-      MemorySize: 3008
-      Timeout: 30
-      Policies:
-        - VPCAccessPolicy: {}
+      MemorySize: 1536
+      Timeout: 29
+      Layers:
+        - !Ref NodeModulesLayer
+      Environment:
+        Variables:
+          NODE_ENV: !Ref Environment
+          DB_HOST: "database-web3-instance-1.cunoo4c2g0on.us-east-1.rds.amazonaws.com"
+          DB_PORT: "5432"
+          DB_USERNAME: "postgres"
+          DB_PASSWORD: "1413qqgmtskABC"
+          DB_DATABASE: "postgres"
+          PORT: "3000"
+          API_PREFIX: "api"
+          LOG_LEVEL: "info"
+          ENABLE_SWAGGER: "true"  # 启用 Swagger
+          API_GATEWAY_ID: "rvkiz74988"  # 你的 API Gateway ID
+          PINATA_JWT_TOKEN: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiJmMDE2YzNmOS0xNDZmLTQwODMtODQ4Yi1kNTdjYzk0NzdjYmYiLCJlbWFpbCI6IjI5MzkxMTcwMTR0c2tAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBpbl9wb2xpY3kiOnsicmVnaW9ucyI6W3siZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiRlJBMSJ9LHsiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiTllDMSJ9XSwidmVyc2lvbiI6MX0sIm1mYV9lbmFibGVkIjpmYWxzZSwic3RhdHVzIjoiQUNUSVZFIn0sImF1dGhlbnRpY2F0aW9uVHlwZSI6InNjb3BlZEtleSIsInNjb3BlZEtleUtleSI6IjdlM2MzZTI5NmNjYjFhMGIzYjY5Iiwic2NvcGVkS2V5U2VjcmV0IjoiNzNiMDE0OTc5NmQ2YTFkNWM5MDUxZjk4MDNjMGIzMjRhMTVhZTVmYjAzOGYxNDA3MDhhYzYxYmQ5MjM4NTdhNCIsImV4cCI6MTc5MDQ5MTkyMn0.bx_QpqMdpLQflJICkbLMBc-TzCcB4gpAijxepFoAjt8"
+          PINATA_GATEWAY_DOMAIN: "cyan-patient-meerkat-49.mypinata.cloud"
+          PINATA_UPLOAD_URL: "https://uploads.pinata.cloud/v3/files"
+          PINATA_FILE_URL: "https://api.pinata.cloud/v3/files"
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
       Events:
+        # 健康检查端点
+        HealthCheck:
+          Type: Api
+          Properties:
+            Path: /health
+            Method: GET
+        # API 信息端点
+        ApiInfo:
+          Type: Api
+          Properties:
+            Path: /api-info
+            Method: GET
+        # Swagger UI
+        SwaggerUI:
+          Type: Api
+          Properties:
+            Path: /api-docs
+            Method: GET
+        # Swagger UI 静态资源
+        SwaggerUIAssets:
+          Type: Api
+          Properties:
+            Path: /api-docs/{proxy+}
+            Method: GET
+        # Swagger JSON
+        SwaggerJSON:
+          Type: Api
+          Properties:
+            Path: /api-docs-json
+            Method: GET
+        # 处理根路径
         RootEvent:
           Type: Api
           Properties:
             Path: /
             Method: ANY
-            RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
+        # 处理所有 API 路径（包括嵌套路径）
         ApiEvent:
           Type: Api
           Properties:
             Path: /{proxy+}
             Method: ANY
-            RestApiId: !Ref Api
-            Auth:
-              Authorizer: NONE
       AutoPublishAlias: live
-    Metadata:
-      BuildMethod: nodejs20.x
-      BuildProperties:
-        Minify: false
-        Target: es2020
-        Sourcemap: true
 
 Outputs:
   ApiEndpoint:
-    Description: API Gateway endpoint URL
-    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/dev'
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}"
+    Export:
+      Name: !Sub "${AWS::StackName}-api-endpoint"
+  
+  FunctionName:
+    Description: "Lambda Function Name"
+    Value: !Ref NestjsFunction
+    Export:
+      Name: !Sub "${AWS::StackName}-function-name"
+  
   FunctionArn:
-    Description: Lambda Function ARN
+    Description: "Lambda Function ARN"
     Value: !GetAtt NestjsFunction.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-function-arn"

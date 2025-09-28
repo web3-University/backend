@@ -9,7 +9,7 @@ import { createDatabaseConfig } from './config/database.config';
 import { winstonConfig } from './config/winston.config';
 import { validate } from './config/env.validation';
 import { MulterModule } from '@nestjs/platform-express';
-import { UploadController } from './modules/storage/storage.controller';
+// import { UploadController } from './modules/storage/storage.controller';
 import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware';
 import { AppLoggerService } from './common/services/logger.service';
 
@@ -18,22 +18,20 @@ import { AppLoggerService } from './common/services/logger.service';
  * 负责导入所有必要的模块和配置
  */
 @Module({
-  controllers: [UploadController],
+  controllers: [],
   providers: [AppLoggerService],
   imports: [
-    // Winston日志模块
     WinstonModule.forRoot(winstonConfig),
-    
     // 配置模块 - 加载环境变量并验证
     ConfigModule.forRoot({
       isGlobal: true, // 全局可用
-      envFilePath: process.env.NODE_ENV === 'development' ?   ['.env.development', '.env'] : ['.env.production', '.env'], // 环境变量文件路径
+      envFilePath: false ? ['.env.development', '.env'] : ['.env.production', '.env'], // 环境变量文件路径
       validate, // 环境变量验证
     }), 
     
     // 数据库配置
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [ConfigModule], 
       useFactory: createDatabaseConfig,
       inject: [ConfigService],
     }),
