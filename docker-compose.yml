@@ -1,4 +1,4 @@
-version: '3.8'
+name: w3college-backend
 
 services:
   postgres:
@@ -7,14 +7,12 @@ services:
     environment:
       POSTGRES_DB: ${DB_DATABASE:-w3college}
       POSTGRES_USER: ${DB_USERNAME:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-123456}
       POSTGRES_INITDB_ARGS: '--encoding=UTF-8'
     ports:
       - '${DB_PORT:-5432}:5432'
     volumes:
       - ./localStoreData/postgres:/var/lib/postgresql/data
-    networks:
-      - w3college-network
 
   redis:
     image: redis:7-alpine
@@ -23,14 +21,4 @@ services:
       - '${REDIS_PORT:-6379}:6379'
     volumes:
       - ./localStoreData/redis:/data
-    networks:
-      - w3college-network
     command: redis-server --appendonly yes
-
-networks:
-  w3college-network:
-    driver: bridge
-
-volumes:
-  postgres_data:
-  redis_data:

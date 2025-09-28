@@ -55,7 +55,46 @@ src/
 1. 📋 社区模块
 2. 📋 管理员模块
 
-## 部署说明
+## AWS Lambda 部署说明
+
+### Lambda Layer 大小限制
+
+**重要提醒：AWS Lambda Layer 有固定的大小限制，无法修改：**
+
+- **单个Layer压缩包大小限制：50 MB**
+- **解压后总大小限制：250 MB**（包括所有层和函数代码）
+- **每个Lambda函数最多可添加5个层**
+
+### Layer 优化配置
+
+项目已配置Lambda Layer来优化部署包大小：
+
+1. **Layer定义**：在`template.yaml`中定义了`NodejsLayer`
+2. **大小检查**：使用`pnpm run check:layer-size`检查Layer大小
+3. **优化安装**：使用`--no-optional`和`.npmrc`配置减少依赖大小
+
+### 部署命令
+
+```bash
+# 构建Layer和Lambda函数
+pnpm run build
+
+# 检查Layer大小（可选）
+pnpm run check:layer-size
+
+# 部署到AWS
+pnpm run deploy
+```
+
+### 如果Layer超过大小限制
+
+如果Layer超过50MB限制，建议：
+
+1. **移除不必要的依赖**：检查`package.json`中的依赖
+2. **使用S3存储**：将大型资源存储在S3中
+3. **容器部署**：考虑使用容器映像部署（支持10GB）
+
+## 本地开发说明
 
 ### 环境要求
 
@@ -189,7 +228,6 @@ pnpm run start:prod
 - price: string (YD币价格)
 - priceInUSD: number
 - nftContract?: string
-- isOnChain: boolean
 - resources?: object
 ```
 
@@ -246,7 +284,8 @@ pnpm run start:prod
 ### 🔗 实体关系设计
 
 ```
-User (1) ←→ (N) Course
+User (1) ←→ (N) Course (作为讲师)
+User (1) ←→ (N) Course (作为学生)
 User (1) ←→ (N) NFTCertificate
 User (1) ←→ (N) Payment
 User (1) ←→ (N) LearningProgress
@@ -256,8 +295,6 @@ Course (1) ←→ (N) Lesson
 Course (1) ←→ (N) NFTCertificate
 Course (1) ←→ (N) Payment
 Course (1) ←→ (N) LearningProgress
-
-Teacher (1) ←→ (N) Course (通过instructorWallet字段关联)
 ```
 
 ### 📝 设计决策说明

@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
@@ -14,11 +14,11 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   /**
-   * 创建新用户
+   * 注册新用户
    */
-  @Post()
+  @Post("register")
   @ApiOperation({ summary: '创建新用户' })
-  @ApiResponse({ status: 201, description: '用户创建成功' })
+  @ApiResponse({ status: 200, description: '用户创建成功' })
   @ApiResponse({ status: 400, description: '请求参数错误' })
   create(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.userService.create(createUserDto);
@@ -27,22 +27,21 @@ export class UserController {
   /**
    * 获取所有用户
    */
-  @Get()
+  @Get("list")
   @ApiOperation({ summary: '获取所有用户' })
   @ApiResponse({ status: 200, description: '获取用户列表成功' })
   findAll(): Promise<User[]> {
     return this.userService.findAll();
   }
+ 
 
-  /**
-   * 根据ID获取用户
-   */
-  @Get(':id')
-  @ApiOperation({ summary: '根据ID获取用户' })
-  @ApiParam({ name: 'id', description: '用户ID' })
+  // 通过钱包地址获取用户
+  @Get('walletAddress')
+  @ApiOperation({ summary: '通过钱包地址获取用户' })
+  @ApiQuery({ name: 'walletAddress', description: '钱包地址' })
   @ApiResponse({ status: 200, description: '获取用户成功' })
-  @ApiResponse({ status: 404, description: '用户不存在' })
-  findOne(@Param('id') id: string): Promise<User | null> {
-    return this.userService.findOne(+id);
+  @ApiResponse({ status: 500, description: '用户不存在' })
+  findByWalletAddress(@Query('walletAddress') walletAddress: string): Promise<User | null> {
+    return this.userService.findByWalletAddress(walletAddress);
   }
 }

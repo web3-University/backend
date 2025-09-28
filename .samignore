@@ -1,0 +1,13 @@
+# 忽略不需要的文件
+src/
+*.md
+*.log
+.git/
+.vscode/
+.idea/
+*.ts
+!dist/
+!lambda.js
+!package*.json
+!template.yaml
+!samconfig.toml

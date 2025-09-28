@@ -5,7 +5,7 @@ import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 /**
  * 用户模块
- * 管理用户相关的功能
+ * 管理用户相关的功能（包括学生和讲师）
  */
 @Module({
   imports: [TypeOrmModule.forFeature([User])],

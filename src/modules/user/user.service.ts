@@ -31,9 +31,9 @@ export class UserService {
   }
 
   /**
-   * 根据ID获取用户
+   * 根据钱包地址获取用户
    */
-  async findOne(id: number): Promise<User | null> {
-    return await this.userRepository.findOne({ where: { id } });
+  async findByWalletAddress(address: string): Promise<User | null> {
+    return await this.userRepository.findOne({ where: { walletAddress: address } });
   }
 }

@@ -1,6 +1,9 @@
 import { WinstonModuleOptions } from 'nest-winston';
 import * as winston from 'winston';
 
+// 检查是否在Lambda环境中
+const isLambda = process.env.AWS_LAMBDA_FUNCTION_NAME !== undefined;
+
 export const winstonConfig: WinstonModuleOptions = {
   level: process.env.LOG_LEVEL || 'info',
   format: winston.format.combine(
@@ -26,35 +29,38 @@ export const winstonConfig: WinstonModuleOptions = {
       ),
     }),
     
-    // 文件输出 - 所有日志
-    new winston.transports.File({
-      dirname: 'logs',
-      filename: 'combined.log',
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json(),
-      ),
-    }),
-    
-    // 文件输出 - 错误日志
-    new winston.transports.File({
-      dirname: 'logs',
-      filename: 'error.log',
-      level: 'error',
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json(),
-      ),
-    }),
+    // 只在非Lambda环境中使用文件输出
+    ...(isLambda ? [] : [
+      // 文件输出 - 所有日志
+      new winston.transports.File({
+        dirname: 'logs',
+        filename: 'combined.log',
+        format: winston.format.combine(
+          winston.format.timestamp(),
+          winston.format.json(),
+        ),
+      }),
+      
+      // 文件输出 - 错误日志
+      new winston.transports.File({
+        dirname: 'logs',
+        filename: 'error.log',
+        level: 'error',
+        format: winston.format.combine(
+          winston.format.timestamp(),
+          winston.format.json(),
+        ),
+      }),
+    ]),
   ],
   
-  // 异常处理
-  exceptionHandlers: [
+  // 异常处理 - 只在非Lambda环境中使用文件
+  exceptionHandlers: isLambda ? [] : [
     new winston.transports.File({ filename: 'logs/exceptions.log' }),
   ],
   
-  // 未捕获的Promise拒绝
-  rejectionHandlers: [
+  // 未捕获的Promise拒绝 - 只在非Lambda环境中使用文件
+  rejectionHandlers: isLambda ? [] : [
     new winston.transports.File({ filename: 'logs/rejections.log' }),
   ],
 };

@@ -153,7 +153,6 @@ GET /api/courses/detail?id=1
   "rating": 4.8,
   "studentCount": 1250,
   "nftContract": "0x...", // 课程NFT合约
-  "isOnChain": true, // 是否已上链
   "lessons": [
     {
       "id": 1,
@@ -503,7 +502,6 @@ interface Course {
   rating: number;
   studentCount: number;
   nftContract?: string; // NFT合约地址
-  isOnChain: boolean; // 是否已上链
   isPublished: boolean;
   createdAt: Date;
   updatedAt: Date;

@@ -37,16 +37,13 @@ async function bootstrap() {
     },
   }));
 
-  // CORS配置 - 支持Web3钱包
+  // CORS配置
   app.enableCors({
     origin: process.env.CORS_ORIGIN || '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
       'Content-Type', 
       'Authorization', 
-      'X-Wallet-Address',
-      'X-Signature',
-      'X-Message',
       'X-Timestamp'
     ],
     credentials: true,
@@ -89,13 +86,13 @@ async function bootstrap() {
     .build();
   
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document, {
+  SwaggerModule.setup(process.env.API_PREFIX || 'api', app, document, {
     swaggerOptions: {
       persistAuthorization: true,
     },
   });
 
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 8051;
   await app.listen(port);
   
   logger.log(`🚀 应用程序运行在 http://localhost:${port}`, 'Bootstrap');

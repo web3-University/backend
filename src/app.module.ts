@@ -2,6 +2,7 @@ import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { UserModule } from './modules/user/user.module';
+import { CourseModule } from './modules/course/course.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { createDatabaseConfig } from './config/database.config';
@@ -26,9 +27,9 @@ import { AppLoggerService } from './common/services/logger.service';
     // 配置模块 - 加载环境变量并验证
     ConfigModule.forRoot({
       isGlobal: true, // 全局可用
-      envFilePath: '.env', // 环境变量文件路径
+      envFilePath: process.env.NODE_ENV === 'development' ?   ['.env.development', '.env'] : ['.env.production', '.env'], // 环境变量文件路径
       validate, // 环境变量验证
-    }),
+    }), 
     
     // 数据库配置
     TypeOrmModule.forRootAsync({
@@ -41,11 +42,12 @@ import { AppLoggerService } from './common/services/logger.service';
     MulterModule.register({
       limits: {
         fileSize: 100 * 1024 * 1024, // 100MB
-      },
+      }, 
     }),
     
     // 业务模块
     UserModule,
+    CourseModule,
     StorageModule,
   ],
 })
