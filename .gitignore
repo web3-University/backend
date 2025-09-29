@@ -61,3 +61,6 @@ layer/
 
 # aws sam
 .aws-sam/
+
+# Claude Code local settings
+.claude/
