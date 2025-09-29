@@ -1,18 +1,27 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean, IsNumber, IsArray, IsUrl } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+  IsBoolean,
+  IsNumber,
+  IsArray,
+  IsUrl,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { COURSE_DIFFICULTY, IS_FREE } from 'src/config/constant';
 
 export class CreateCourseDto {
   @ApiProperty({
     description: '创建者钱包地址',
-    example: 1
+    example: '0x1234567890123456789012345678901234567890',
   })
   @IsNotEmpty({ message: '钱包地址不能为空' })
   walletAddress: string;
 
   @ApiProperty({
     description: '课程标题',
-    example: 'Web3区块链开发入门'
+    example: 'Web3区块链开发入门',
   })
   @IsNotEmpty({ message: '课程标题不能为空' })
   @IsString({ message: '课程标题必须是字符串' })
@@ -20,7 +29,7 @@ export class CreateCourseDto {
 
   @ApiProperty({
     description: '课程描述',
-    example: '从零开始学习Web3和区块链开发技术'
+    example: '从零开始学习Web3和区块链开发技术',
   })
   @IsNotEmpty({ message: '课程描述不能为空' })
   @IsString({ message: '课程描述必须是字符串' })
@@ -29,24 +38,15 @@ export class CreateCourseDto {
   @ApiProperty({
     description: '课程封面URL',
     example: 'https://ipfs.io/ipfs/Qm...',
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsUrl({}, { message: '课程封面必须是有效的URL' })
   cover?: string;
 
   @ApiProperty({
-    description: '讲师钱包地址',
-    example: '0x1234567890123456789012345678901234567890'
-  })
-  @IsNotEmpty({ message: '讲师钱包地址不能为空' })
-  @IsString({ message: '讲师钱包地址必须是字符串' })
-  instructorWallet: string;
-
-
-  @ApiProperty({
     description: '课程分类',
-    example: ['区块链基础', 'Web3', 'Solidity']
+    example: ['区块链基础', 'Web3', 'Solidity'],
   })
   @IsNotEmpty({ message: '课程分类不能为空' })
   @IsArray({ message: '课程分类必须是数组' })
@@ -54,28 +54,29 @@ export class CreateCourseDto {
   categories: string[];
 
   @ApiProperty({
-    description: '课程难度2',
+    description: '课程难度',
     example: COURSE_DIFFICULTY.BEGINNER,
-    enum: Object.values(COURSE_DIFFICULTY)
+    enum: Object.values(COURSE_DIFFICULTY),
   })
   @IsNotEmpty({ message: '课程难度不能为空' })
-  @IsEnum(Object.values(COURSE_DIFFICULTY), { message: '课程难度必须是beginner、intermediate或advanced' })
+  @IsEnum(Object.values(COURSE_DIFFICULTY), {
+    message: '课程难度必须是beginner、intermediate或advanced',
+  })
   difficulty: string;
 
   @ApiProperty({
     description: 'YD币价格',
     example: '100',
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsString({ message: 'YD币价格必须是字符串' })
   price?: string;
 
-
   @ApiProperty({
     description: '课程时长（分钟）',
     example: 120,
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsNumber({}, { message: '课程时长必须是数字' })
@@ -84,7 +85,7 @@ export class CreateCourseDto {
   @ApiProperty({
     description: '是否免费',
     example: IS_FREE.FALSE,
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsString({ message: '是否免费必须是字符串' })
@@ -94,7 +95,7 @@ export class CreateCourseDto {
   @ApiProperty({
     description: '课程标签',
     example: ['区块链', 'Web3', 'Solidity'],
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsArray({ message: '课程标签必须是数组' })
@@ -104,7 +105,7 @@ export class CreateCourseDto {
   @ApiProperty({
     description: '学习目标',
     example: ['掌握Solidity基础', '能够开发智能合约'],
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsArray({ message: '学习目标必须是数组' })
@@ -114,19 +115,10 @@ export class CreateCourseDto {
   @ApiProperty({
     description: '前置要求',
     example: ['JavaScript基础', '区块链概念'],
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsArray({ message: '前置要求必须是数组' })
   @IsString({ each: true, message: '前置要求数组中的每个元素必须是字符串' })
   prerequisites?: string[];
-
-  @ApiProperty({
-    description: '预计学习小时数',
-    example: 20,
-    required: false
-  })
-  @IsOptional()
-  @IsNumber({}, { message: '预计学习小时数必须是数字' })
-  estimatedHours?: number;
 }

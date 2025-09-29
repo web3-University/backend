@@ -9,7 +9,6 @@ import { createDatabaseConfig } from './config/database.config';
 import { winstonConfig } from './config/winston.config';
 import { validate } from './config/env.validation';
 import { MulterModule } from '@nestjs/platform-express';
-// import { UploadController } from './modules/storage/storage.controller';
 import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware';
 import { AppLoggerService } from './common/services/logger.service';
 

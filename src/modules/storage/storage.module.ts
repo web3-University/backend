@@ -1,11 +1,10 @@
-// src/storage/storage.module.ts
 import { Module } from '@nestjs/common';
-import { StorachaStorageService } from './storage.service';
-import { UploadController } from './storage.controller';
+import { S3Controller } from './s3.controller';
+import { S3Service } from './s3.service';
 
 @Module({
-  providers: [StorachaStorageService],
-  controllers: [UploadController],
-  exports: [StorachaStorageService],
+  controllers: [S3Controller],
+  providers: [S3Service],
+  exports: [S3Service], // 导出服务，供其他模块使用
 })
 export class StorageModule {}

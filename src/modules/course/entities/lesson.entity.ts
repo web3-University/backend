@@ -1,6 +1,14 @@
 import { CommonEntity } from 'src/common/entities/Common.entity';
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Course } from './course.entity';
+import { UserLessonProgress } from './user-lesson.entity';
 
 /**
  * 章节实体 - 单个课程章节
@@ -8,6 +16,9 @@ import { Course } from './course.entity';
  */
 @Entity()
 export class Lesson extends CommonEntity {
+  @PrimaryGeneratedColumn()
+  lessonId: number;
+
   // 基本信息
   @Column()
   title: string;
@@ -32,22 +43,22 @@ export class Lesson extends CommonEntity {
   order: number;
 
   // 章节类型
-  @Column({ 
-    type: 'enum', 
-    enum: ['video', 'text', 'quiz', 'assignment', 'live'], 
-    default: 'video' 
+  @Column({
+    type: 'enum',
+    enum: ['video', 'text', 'quiz', 'assignment', 'live'],
+    default: 'video',
   })
   type: 'video' | 'text' | 'quiz' | 'assignment' | 'live';
 
   // 是否免费预览
   @Column({ default: false })
-  isPreview: boolean;
+  isFreePreview: boolean;
 
   // 章节状态
-  @Column({ 
-    type: 'enum', 
-    enum: ['draft', 'published', 'archived'], 
-    default: 'draft' 
+  @Column({
+    type: 'enum',
+    enum: ['draft', 'published', 'archived'],
+    default: 'draft',
   })
   status: 'draft' | 'published' | 'archived';
 
@@ -55,35 +66,18 @@ export class Lesson extends CommonEntity {
   @Column({ type: 'json', nullable: true })
   attachments?: string[]; // IPFS链接数组
 
-  // 学习目标
-  @Column({ type: 'json', nullable: true })
-  objectives?: string[];
-
-  // 前置条件
-  @Column({ type: 'json', nullable: true })
-  prerequisites?: number[]; // 前置章节ID数组
-
   // 关联的课程
   @Column()
   courseId: number;
 
-  @ManyToOne(() => Course, course => course.id)
+  @ManyToOne(() => Course, (course) => course.lessons)
   @JoinColumn({ name: 'courseId' })
   course: Course;
 
-  // 讲师钱包地址（冗余字段，提高查询效率）
-  @Column()
-  instructorWallet: string;
-
-  // 章节标签
-  @Column({ type: 'json', nullable: true })
-  tags?: string[];
-
-  // 观看次数
-  @Column({ default: 0 })
-  viewCount: number;
-
-  // 完成次数
-  @Column({ default: 0 })
-  completionCount: number;
+  // 关联关系 - 级联删除配置
+  // 用户章节学习进度
+  @OneToMany(() => UserLessonProgress, (progress) => progress.lesson, {
+    cascade: true,
+  })
+  userProgresses: UserLessonProgress[];
 }

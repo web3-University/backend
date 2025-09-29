@@ -1,7 +1,23 @@
 import { CommonEntity } from 'src/common/entities/Common.entity';
-import { Entity, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Lesson } from './lesson.entity';
-import { COURSE_DIFFICULTY, COURSE_STATUS, IS_FREE } from 'src/config/constant';
+import { UserCourseProgress } from './user-course.entity';
+import { NFTCertificate } from '../../certificate/entities/nft-certificate.entity';
+import { User } from '../../user/entities/user.entity';
+import {
+  COURSE_DIFFICULTY,
+  COURSE_STATUS,
+  IS_FREE,
+  LEARNING_STATUS,
+} from 'src/config/constant';
 
 /**
  * 课程实体 - 课程系列/集合
@@ -9,6 +25,9 @@ import { COURSE_DIFFICULTY, COURSE_STATUS, IS_FREE } from 'src/config/constant';
  */
 @Entity()
 export class Course extends CommonEntity {
+  @PrimaryGeneratedColumn()
+  courseId: number;
+
   // 基本信息
   @Column()
   title: string;
@@ -24,10 +43,11 @@ export class Course extends CommonEntity {
   @Column()
   instructorWallet: string;
 
-  // 课程分类和难度
+  // 课程分类
   @Column({ type: 'json' })
   categories: string[]; // 如 "区块链基础"
 
+  // 课程难度
   @Column({ default: COURSE_DIFFICULTY.BEGINNER })
   difficulty: string;
 
@@ -56,6 +76,7 @@ export class Course extends CommonEntity {
   @Column({ default: COURSE_STATUS.DRAFT })
   status: string;
 
+  // 是否免费
   @Column({ default: IS_FREE.FALSE })
   isFree: string;
 
@@ -75,11 +96,82 @@ export class Course extends CommonEntity {
   @Column({ nullable: true })
   nftContract?: string; // NFT证书合约地址
 
-  // 预计学习时间
-  @Column({ default: 0 })
-  estimatedHours: number; // 预计学习小时数
+  // 关联关系
+  // 讲师关系
+  @ManyToOne(() => User, (user) => user.createdCourses)
+  @JoinColumn({
+    name: 'instructorWallet',
+    referencedColumnName: 'walletAddress',
+  })
+  instructor: User;
 
-  // 关联关系 - 一个课程包含多个章节
-  @OneToMany(() => Lesson, lesson => lesson.course)
+  // 一个课程包含多个章节
+  @OneToMany(() => Lesson, (lesson) => lesson.course, { cascade: true })
   lessons: Lesson[];
+
+  // 用户课程学习进度
+  @OneToMany(() => UserCourseProgress, (progress) => progress.course, {
+    cascade: true,
+  })
+  userProgresses: UserCourseProgress[];
+
+  // NFT证书记录
+  @OneToMany(() => NFTCertificate, (certificate) => certificate.courseId, {
+    cascade: true,
+  })
+  certificates: NFTCertificate[];
+
+  // 获取购买此课程的用户
+  get purchasedUsers(): User[] {
+    return (
+      this.userProgresses
+        ?.filter((progress) => progress.isPurchased)
+        ?.map((progress) => progress.user) || []
+    );
+  }
+
+  // 获取完成此课程的用户
+  get completedUsers(): User[] {
+    return (
+      this.userProgresses
+        ?.filter(
+          (progress) =>
+            progress.isPurchased &&
+            progress.status === LEARNING_STATUS.COMPLETED,
+        )
+        ?.map((progress) => progress.user) || []
+    );
+  }
+
+  // 获取课程购买数量
+  get purchaseCount(): number {
+    return (
+      this.userProgresses?.filter((progress) => progress.isPurchased).length ||
+      0
+    );
+  }
+
+  // 获取课程完成数量
+  get completionCount(): number {
+    return (
+      this.userProgresses?.filter(
+        (progress) =>
+          progress.isPurchased && progress.status === LEARNING_STATUS.COMPLETED,
+      ).length || 0
+    );
+  }
+
+  // 获取课程平均评分
+  get averageRating(): number {
+    const ratings =
+      this.userProgresses
+        ?.filter(
+          (progress) =>
+            progress.userRating !== null && progress.userRating !== undefined,
+        )
+        ?.map((progress) => progress.userRating!) || [];
+
+    if (ratings.length === 0) return 0;
+    return ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length;
+  }
 }

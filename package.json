@@ -5,7 +5,7 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
-  "main":"lambda.js",
+  "main": "lambda.js",
   "scripts": {
     "dev": "nest start --watch --env-file=.env.development",
     "start:prod": "node dist/main --env-file=.env.production",
@@ -23,6 +23,8 @@
     "local": "sam local start-api --warm-containers EAGER --container-host host.docker.internal"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.896.0",
+    "@aws-sdk/s3-request-presigner": "^3.896.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -97,6 +99,9 @@
   "pnpm": {
     "overrides": {
       "semver": "^7.5.4"
-    }
+    },
+    "ignoredBuiltDependencies": [
+      "@nestjs/core"
+    ]
   }
 }

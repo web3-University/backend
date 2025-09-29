@@ -64,3 +64,5 @@ layer/
 
 # Claude Code local settings
 .claude/
+
+dist

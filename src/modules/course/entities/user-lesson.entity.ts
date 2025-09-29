@@ -1,5 +1,12 @@
 import { CommonEntity } from 'src/common/entities/Common.entity';
-import { Entity, Column, ManyToOne, JoinColumn, PrimaryGeneratedColumn, Index } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  PrimaryGeneratedColumn,
+  Index,
+} from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Lesson } from './lesson.entity';
 
@@ -7,16 +14,15 @@ import { Lesson } from './lesson.entity';
  * 用户章节学习进度实体
  * 关联表设计，存储用户与章节的详细学习记录
  */
-@Entity()
-@Index(['userId', 'lessonId'], { unique: true }) // 确保用户-章节组合唯一
-@Index(['userId', 'courseId']) // 按用户和课程查询优化
+@Entity('user_lesson_progress')
+@Index(['walletAddress', 'lessonId'], { unique: true }) // 确保用户-章节组合唯一
 export class UserLessonProgress extends CommonEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // 用户ID
+  // 用户钱包地址
   @Column()
-  userId: number;
+  walletAddress: string;
 
   // 章节ID
   @Column()
@@ -62,17 +68,19 @@ export class UserLessonProgress extends CommonEntity {
   @Column({
     type: 'enum',
     enum: ['not_started', 'watching', 'completed'],
-    default: 'not_started'
+    default: 'not_started',
   })
   status: 'not_started' | 'watching' | 'completed';
 
   // 关联用户
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'userId' })
+  @ManyToOne(() => User, (user) => user.lessonProgresses, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'walletAddress', referencedColumnName: 'walletAddress' })
   user: User;
 
   // 关联章节
-  @ManyToOne(() => Lesson)
-  @JoinColumn({ name: 'lessonId' })
+  @ManyToOne(() => Lesson, (lesson) => lesson.userProgresses)
+  @JoinColumn({ name: 'lessonId', referencedColumnName: 'lessonId' })
   lesson: Lesson;
 }

@@ -1,9 +1,20 @@
 import { CommonEntity } from 'src/common/entities/Common.entity';
-import { Entity, Column } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { User } from '../../user/entities/user.entity';
+import { Course } from '../../course/entities/course.entity';
 
 // nft 要与课程表关联
 @Entity()
 export class NFTCertificate extends CommonEntity {
+  @PrimaryGeneratedColumn()
+  certificateId: number;
+
   // NFT Token ID
   @Column({ unique: true })
   tokenId: string;
@@ -36,4 +47,13 @@ export class NFTCertificate extends CommonEntity {
   @Column()
   blockNumber: number;
 
+  // 关联用户
+  @ManyToOne(() => User, (user) => user.certificates)
+  @JoinColumn({ name: 'walletAddress', referencedColumnName: 'walletAddress' })
+  user: User;
+
+  // 关联课程
+  @ManyToOne(() => Course, (course) => course.certificates)
+  @JoinColumn({ name: 'courseId', referencedColumnName: 'courseId' })
+  course: Course;
 }

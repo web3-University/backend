@@ -1,13 +1,16 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, In, Like, Repository, Not, IsNull } from 'typeorm';
 import { Course } from './entities/course.entity';
 import { Lesson } from './entities/lesson.entity';
-import { UserCourseProgress } from './entities/user-course-progress.entity';
+import { UserCourseProgress } from './entities/user-course.entity';
 import { User } from '../user/entities/user.entity';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { CreateLessonDto } from './dto/create-lesson.dto';
-import { COURSE_STATUS } from 'src/config/constant';
 
 @Injectable()
 export class CourseService {
@@ -20,7 +23,7 @@ export class CourseService {
     private userCourseProgressRepository: Repository<UserCourseProgress>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
-  ) { }
+  ) {}
 
   /**
    * 创建课程（需要验证用户身份和权限）
@@ -28,15 +31,17 @@ export class CourseService {
   async create(createCourseDto: CreateCourseDto): Promise<Course> {
     // 验证用户是否存在
     const user = await this.userRepository.findOne({
-      where: { walletAddress: createCourseDto.walletAddress }
+      where: { walletAddress: createCourseDto.walletAddress },
     });
 
     if (!user) {
-      throw new NotFoundException(`用户 ID ${createCourseDto.walletAddress} 不存在`);
+      throw new NotFoundException(
+        `用户钱包地址 ${createCourseDto.walletAddress} 不存在`,
+      );
     }
 
     // 验证讲师是否已注册和审核通过
-    if (user.isInstructorRegistered && user.isInstructorApproved) {
+    if (!user.isInstructorRegistered || !user.isInstructorApproved) {
       throw new ForbiddenException('讲师需要先注册并通过审核才能创建课程');
     }
 
@@ -45,25 +50,22 @@ export class CourseService {
       ...createCourseDto,
       instructorWallet: user.walletAddress,
     };
-
     const course = this.courseRepository.create(courseData);
     const savedCourse = await this.courseRepository.save(course);
-
-    // 更新用户的课程数量
-    await this.userRepository.increment({
-      walletAddress: user.walletAddress
-    }, 'instructorCourses', 1);
-
     return savedCourse;
   }
 
   /**
    * 获取用户创建的课程
    */
-  async getUserCourses(walletAddress: string, page: number = 1, limit: number = 10): Promise<Course[]> {
+  async getUserCourses(
+    walletAddress: string,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<Course[]> {
     // 验证用户是否存在
     const user = await this.userRepository.findOne({
-      where: { walletAddress }
+      where: { walletAddress },
     });
 
     if (!user) {
@@ -81,7 +83,21 @@ export class CourseService {
   /**
    * 获取所有课程
    */
-  async findAll({ page, limit, free, priceRange, keyword, categories }: { page: number, limit: number, categories?: string[], free?: string, priceRange?: string[], keyword?: string }): Promise<Course[]> {
+  async findAll({
+    page,
+    limit,
+    free,
+    priceRange,
+    keyword,
+    categories,
+  }: {
+    page: number;
+    limit: number;
+    categories?: string[];
+    free?: string;
+    priceRange?: string[];
+    keyword?: string;
+  }): Promise<Course[]> {
     const courses = await this.courseRepository.find({
       order: { createdAt: 'DESC' },
       where: {
@@ -100,37 +116,36 @@ export class CourseService {
   /**
    * 根据ID获取课程
    */
-  async findOne(id: number): Promise<Course> {
-    const course = await this.courseRepository.findOne({ where: { id } });
+  async findOne(courseId: number): Promise<Course> {
+    const course = await this.courseRepository.findOne({
+      where: { courseId: courseId },
+    });
     if (!course) {
-      throw new NotFoundException(`课程 ID ${id} 不存在`);
+      throw new NotFoundException(`课程ID ${courseId} 不存在`);
     }
-    return this.transformCourseData(course);
-  }
-
-  /**
-   * 删除课程
-   */
-  async remove(id: number): Promise<void> {
-    const course = await this.findOne(id);
-    await this.courseRepository.remove(course);
+    return course;
   }
 
   /**
    * 更新课程评分（需要验证用户是否购买过课程）
    */
-  async updateRating(courseId: number, walletAddress: string, rating: number): Promise<Course> {
+  async updateRating(
+    courseId: number,
+    walletAddress: string,
+    rating: number,
+  ): Promise<Course> {
     // 验证课程是否存在
     const course = await this.findOne(courseId);
     // 验证用户是否存在
-    const user = await this.userRepository.findOne({ where: { walletAddress } });
+    const user = await this.userRepository.findOne({
+      where: { walletAddress },
+    });
     if (!user) {
-      throw new NotFoundException(`用户 ID ${walletAddress} 不存在`);
+      throw new NotFoundException(`用户钱包地址 ${walletAddress} 不存在`);
     }
-
     // 验证用户是否购买过该课程
     const userProgress = await this.userCourseProgressRepository.findOne({
-      where: { walletAddress, courseId, isPaid: true }
+      where: { walletAddress, isPurchased: true },
     });
 
     if (!userProgress) {
@@ -149,12 +164,16 @@ export class CourseService {
 
     // 计算课程平均评分
     const allRatings = await this.userCourseProgressRepository.find({
-      where: { courseId, userRating: Not(IsNull()) },
-      select: ['userRating']
+      where: { courseId: courseId, userRating: Not(IsNull()) },
+      select: ['userRating'],
     });
 
-    const totalRating = allRatings.reduce((sum, progress) => sum + (progress.userRating || 0), 0);
-    const averageRating = allRatings.length > 0 ? totalRating / allRatings.length : 0;
+    const totalRating = allRatings.reduce(
+      (sum, progress) => sum + (progress.userRating || 0),
+      0,
+    );
+    const averageRating =
+      allRatings.length > 0 ? totalRating / allRatings.length : 0;
 
     // 更新课程评分
     course.rating = Math.round(averageRating * 100) / 100; // 保留两位小数
@@ -190,24 +209,13 @@ export class CourseService {
   /**
    * 获取章节详情
    */
-  async getLesson(id: number): Promise<Lesson> {
-    const lesson = await this.lessonRepository.findOne({ where: { id } });
+  async getLesson(lessonId: number): Promise<Lesson> {
+    const lesson = await this.lessonRepository.findOne({
+      where: { lessonId },
+    });
     if (!lesson) {
-      throw new NotFoundException(`章节 ID ${id} 不存在`);
+      throw new NotFoundException(`章节ID ${lessonId} 不存在`);
     }
     return lesson;
   }
-
-  // ========== 数据转换方法 ==========
-
-  /**
-   * 转换课程数据格式
-   */
-  private transformCourseData(course: Course): any {
-    return {
-      ...course,
-      isFree: course.isFree ? true : false, // 保持布尔值，但确保一致性
-    };
-  }
-
 }
