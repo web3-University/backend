@@ -1,41 +1,47 @@
 {
   "name": "backend",
   "version": "0.0.1",
-  "description": "",
+  "description": "Web3 University Backend API",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "main":"lambda.js",
   "scripts": {
     "dev": "nest start --watch --env-file=.env.development",
     "start:prod": "node dist/main --env-file=.env.production",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:restart": "docker compose restart",
-    "build": "pnpm run build:layer && pnpm run build:lambda && sam build",
-    "build:layer": "rm -rf layer && mkdir -p layer/nodejs && cp package.json layer/nodejs/ && cd layer/nodejs && pnpm install --production",
-    "build:lambda": "rm -rf dist && nest build && cp lambda.js dist/lambda.js && cp package.json dist/ && cd dist && pnpm install --production",
-    "deploy": "sam deploy --no-confirm-changeset"
+    "prebuild": "rimraf dist layer",
+    "build": "pnpm run build:nest && pnpm run build:layer && pnpm run build:lambda && sam build",
+    "build:nest": "nest build",
+    "build:layer": "mkdir -p layer/nodejs && cp package.json layer/nodejs/ && cd layer/nodejs && npm install --production --no-optional",
+    "build:lambda": "cp lambda.js dist/ && cp package.json dist/ && cd dist && npm install --production --no-optional",
+    "deploy": "sam deploy --no-confirm-changeset --parameter-overrides Environment=dev",
+    "deploy:prod": "sam deploy --no-confirm-changeset --parameter-overrides Environment=prod",
+    "logs": "sam logs --stack-name web3-university --tail",
+    "local": "sam local start-api --warm-containers EAGER --container-host host.docker.internal"
   },
   "dependencies": {
-    "@codegenie/serverless-express": "4.17.0",
-    "@nestjs/common": "11.0.1",
-    "@nestjs/config": "4.0.2",
-    "@nestjs/core": "11.0.1",
-    "@nestjs/platform-express": "11.0.1",
-    "@nestjs/swagger": "11.2.0",
-    "@nestjs/typeorm": "11.0.0",
-    "class-transformer": "0.5.1",
-    "class-validator": "0.14.2",
-    "multer": "2.0.2",
-    "nest-winston": "1.10.2",
-    "pg": "8.16.3",
-    "pinata": "2.5.0",
-    "reflect-metadata": "0.2.2",
-    "rxjs": "7.8.1",
-    "swagger-ui-express": "5.0.1",
-    "typeorm": "0.3.27",
-    "winston": "3.17.0",
-    "zod": "4.1.11"
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/swagger": "^11.2.0",
+    "@nestjs/typeorm": "^11.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "multer": "^2.0.2",
+    "nest-winston": "^1.10.2",
+    "pg": "^8.16.3",
+    "pinata": "^2.5.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "serverless-http": "^4.0.0",
+    "swagger-ui-express": "^5.0.1",
+    "typeorm": "^0.3.27",
+    "winston": "^3.17.0",
+    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -49,7 +55,7 @@
     "@types/jest": "^29.5.14",
     "@types/multer": "^2.0.0",
     "@types/node": "^20.11.19",
-    "@types/pg": "8.15.5",
+    "@types/pg": "^8.15.5",
     "@types/supertest": "^6.0.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
@@ -57,6 +63,7 @@
     "globals": "^15.14.0",
     "jest": "^29.7.0",
     "prettier": "^3.4.2",
+    "rimraf": "^6.0.1",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
@@ -67,7 +74,7 @@
     "typescript-eslint": "^8.20.0"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=20.0.0",
     "pnpm": ">=8.0.0"
   },
   "jest": {
@@ -86,5 +93,10 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "pnpm": {
+    "overrides": {
+      "semver": "^7.5.4"
+    }
   }
 }
