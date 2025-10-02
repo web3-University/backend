@@ -7,17 +7,9 @@ import {
   Req,
   Delete,
   Param,
-  HttpCode,
-  HttpStatus,
   // Version,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiBody,
-} from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { NonceRequestDto } from './dto/nonce-request.dto';
@@ -30,6 +22,16 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Throttle } from '@nestjs/throttler';
+import {
+  NonceApiDoc,
+  LoginApiDoc,
+  RefreshTokenApiDoc,
+  LogoutApiDoc,
+  GetMeApiDoc,
+  GetSessionsApiDoc,
+  RevokeSessionApiDoc,
+  LogoutAllApiDoc,
+} from './swagger-doc';
 
 /**
  * 认证控制器
@@ -51,16 +53,7 @@ export class AuthController {
   // @Version('2')
   @Post('nonce')
   @Throttle({ default: { limit: 10, ttl: 60000 } })
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '获取 Nonce（用于签名）' })
-  @ApiBody({ type: NonceRequestDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Nonce 生成成功',
-    type: NonceResponseDto,
-  })
-  @ApiResponse({ status: 400, description: '无效的钱包地址' })
-  @ApiResponse({ status: 429, description: '请求过于频繁' })
+  @NonceApiDoc()
   async getNonce(
     @Body() nonceRequestDto: NonceRequestDto,
     @Req() req: Request,
@@ -78,15 +71,7 @@ export class AuthController {
    */
   @Public()
   @Post('login')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '登录（验证签名）' })
-  @ApiBody({ type: LoginDto })
-  @ApiResponse({
-    status: 200,
-    description: '登录成功',
-    type: LoginResponseDto,
-  })
-  @ApiResponse({ status: 401, description: '签名验证失败' })
+  @LoginApiDoc()
   async login(
     @Body() loginDto: LoginDto,
     @Req() req: Request,
@@ -102,15 +87,7 @@ export class AuthController {
    */
   @Public()
   @Post('refresh')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '刷新 Access Token' })
-  @ApiBody({ type: RefreshTokenDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Token 刷新成功',
-    type: RefreshTokenResponseDto,
-  })
-  @ApiResponse({ status: 401, description: 'Refresh Token 无效' })
+  @RefreshTokenApiDoc()
   async refresh(
     @Body() refreshTokenDto: RefreshTokenDto,
     @Req() req: Request,
@@ -130,11 +107,7 @@ export class AuthController {
    */
   @UseGuards(JwtAuthGuard)
   @Post('logout')
-  @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: '登出（撤销 Token）' })
-  @ApiResponse({ status: 200, description: '登出成功' })
-  @ApiResponse({ status: 401, description: '未授权' })
+  @LogoutApiDoc()
   async logout(@CurrentUser('walletAddress') walletAddress: string) {
     await this.authService.logout(walletAddress);
     return { message: '登出成功' };
@@ -145,10 +118,7 @@ export class AuthController {
    */
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: '获取当前用户信息' })
-  @ApiResponse({ status: 200, description: '获取成功' })
-  @ApiResponse({ status: 401, description: '未授权' })
+  @GetMeApiDoc()
   getMe(
     @CurrentUser()
     user: {
@@ -165,10 +135,7 @@ export class AuthController {
    */
   @UseGuards(JwtAuthGuard)
   @Get('sessions')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: '获取所有活动会话' })
-  @ApiResponse({ status: 200, description: '获取成功' })
-  @ApiResponse({ status: 401, description: '未授权' })
+  @GetSessionsApiDoc()
   async getSessions(@CurrentUser('walletAddress') walletAddress: string) {
     const sessions = await this.authService.getActiveSessions(walletAddress);
     return {
@@ -189,12 +156,7 @@ export class AuthController {
    */
   @UseGuards(JwtAuthGuard)
   @Delete('sessions/:sessionId')
-  @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: '撤销指定会话' })
-  @ApiResponse({ status: 200, description: '会话已撤销' })
-  @ApiResponse({ status: 401, description: '未授权' })
-  @ApiResponse({ status: 404, description: '会话不存在' })
+  @RevokeSessionApiDoc()
   async revokeSession(
     @CurrentUser('walletAddress') walletAddress: string,
     @Param('sessionId') sessionId: string,
@@ -208,11 +170,7 @@ export class AuthController {
    */
   @UseGuards(JwtAuthGuard)
   @Post('logout-all')
-  @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: '登出所有设备' })
-  @ApiResponse({ status: 200, description: '所有会话已撤销' })
-  @ApiResponse({ status: 401, description: '未授权' })
+  @LogoutAllApiDoc()
   async logoutAll(@CurrentUser('walletAddress') walletAddress: string) {
     await this.authService.logout(walletAddress);
     return { message: '所有设备已登出' };
