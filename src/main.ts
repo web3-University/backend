@@ -1,5 +1,9 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import {
+  ValidationPipe,
+  VERSION_NEUTRAL,
+  VersioningType,
+} from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AppModule } from './app.module';
@@ -27,6 +31,13 @@ async function bootstrap() {
   // 设置全局前缀
   app.setGlobalPrefix(apiPrefix);
   logger.log(`设置全局API前缀: /${apiPrefix}`, 'Bootstrap');
+
+  // 启用版本控制（URI方式）
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: VERSION_NEUTRAL,
+  });
+  logger.log('API版本控制已启用（URI模式）', 'Bootstrap');
 
   // 全局异常过滤器
   app.useGlobalFilters(new GlobalExceptionFilter(logger));
@@ -133,7 +144,7 @@ async function bootstrap() {
 
   if (!isLambda) {
     // 本地开发环境
-    const port = process.env.PORT || 8079; 
+    const port = process.env.PORT || 8079;
     await app.listen(port);
 
     logger.log(`🚀 应用程序运行在 http://localhost:${port}`, 'Bootstrap');

@@ -9,6 +9,7 @@ import {
   Param,
   HttpCode,
   HttpStatus,
+  // Version,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -35,7 +36,10 @@ import { Throttle } from '@nestjs/throttler';
  * 处理 Web3 认证相关的 HTTP 请求
  */
 @ApiTags('认证管理')
-@Controller('auth')
+@Controller({
+  path: 'auth',
+  version: '1',
+})
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -44,6 +48,7 @@ export class AuthController {
    * 限流：每分钟最多 10 次请求
    */
   @Public()
+  // @Version('2')
   @Post('nonce')
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
