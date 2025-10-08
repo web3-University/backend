@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欢迎加入Web3大学</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .welcome-box {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .feature {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .emoji {
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><span class="emoji">🎓</span> 欢迎加入{{platformName}}！</h1>
+        </div>
+        
+        <div class="content">
+            <p>亲爱的 <strong>{{username}}</strong>，</p>
+            
+            <div class="welcome-box">
+                <h3>欢迎来到Web3的未来！</h3>
+                <p>您已成功加入{{platformName}}，开始您的区块链学习之旅。</p>
+                <p>加入日期：{{joinDate}}</p>
+            </div>
+            
+            <p>在{{platformName}}，您将体验到：</p>
+            
+            <div class="features">
+                <div class="feature">
+                    <div class="emoji">📚</div>
+                    <h4>专业课程</h4>
+                    <p>从基础到高级的完整课程体系</p>
+                </div>
+                <div class="feature">
+                    <div class="emoji">🏆</div>
+                    <h4>NFT证书</h4>
+                    <p>完成课程获得区块链NFT证书</p>
+                </div>
+                <div class="feature">
+                    <div class="emoji">💰</div>
+                    <h4>YD币支付</h4>
+                    <p>使用加密货币购买课程</p>
+                </div>
+                <div class="feature">
+                    <div class="emoji">🌐</div>
+                    <h4>去中心化</h4>
+                    <p>真正的Web3学习体验</p>
+                </div>
+            </div>
+            
+            <p style="text-align: center;">
+                <a href="#" class="button">开始学习</a>
+            </p>
+            
+            <p>我们为您准备了丰富的学习资源：</p>
+            <ul>
+                <li>📖 区块链基础知识</li>
+                <li>💻 智能合约开发</li>
+                <li>🎨 NFT和DeFi应用</li>
+                <li>🔐 Web3安全实践</li>
+            </ul>
+            
+            <p>如果您有任何问题，我们的社区和客服团队随时为您服务。</p>
+            
+            <p>再次欢迎您加入{{platformName}}，让我们一起探索Web3的无限可能！</p>
+        </div>
+        
+        <div class="footer">
+            <p>此邮件由{{platformName}}系统自动发送，请勿回复。</p>
+            <p>如有问题，请联系我们的客服团队。</p>
+        </div>
+    </div>
+</body>
+</html>

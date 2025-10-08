@@ -72,7 +72,7 @@ export class CreateLessonDto {
   })
   @IsOptional()
   @IsBoolean({ message: '是否免费预览必须是布尔值' })
-  isPreview?: boolean;
+  isFreePreview?: boolean;
 
   @ApiProperty({
     description: '课程ID',

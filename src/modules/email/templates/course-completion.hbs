@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程完成通知</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .highlight {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .emoji {
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><span class="emoji">🎉</span> 恭喜完成课程！</h1>
+        </div>
+        
+        <div class="content">
+            <p>亲爱的 <strong>{{username}}</strong>，</p>
+            
+            <p>我们很高兴地通知您，您已经成功完成了课程：</p>
+            
+            <div class="highlight">
+                <h3>{{courseTitle}}</h3>
+                <p>完成日期：{{completionDate}}</p>
+            </div>
+            
+            <p>您的学习成果令人印象深刻！现在您可以：</p>
+            <ul>
+                <li>查看您的学习证书</li>
+                <li>在社交媒体上分享您的成就</li>
+                <li>继续学习更多课程</li>
+            </ul>
+            
+            <p style="text-align: center;">
+                <a href="{{certificateUrl}}" class="button">查看证书</a>
+            </p>
+            
+            <p>感谢您选择Web3大学，祝您学习愉快！</p>
+        </div>
+        
+        <div class="footer">
+            <p>此邮件由Web3大学系统自动发送，请勿回复。</p>
+            <p>如有问题，请联系我们的客服团队。</p>
+        </div>
+    </div>
+</body>
+</html>

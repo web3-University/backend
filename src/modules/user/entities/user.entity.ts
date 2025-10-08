@@ -24,14 +24,6 @@ export class User extends CommonEntity {
   @Column({ nullable: true })
   avatar?: string;
 
-  // // 用户角色：学生、讲师、管理员
-  // @Column({
-  //   type: 'enum',
-  //   enum: ['student', 'instructor', 'admin'],
-  //   default: 'student',
-  // })
-  // role: 'student' | 'instructor' | 'admin';
-
   // 讲师相关字段（当role为instructor时使用）
   @Column({ type: 'text', nullable: true })
   bio?: string;
@@ -66,9 +58,7 @@ export class User extends CommonEntity {
   lessonProgresses: UserLessonProgress[];
 
   // NFT证书记录
-  @OneToMany(() => NFTCertificate, (certificate) => certificate.user, {
-    cascade: true,
-  })
+  @OneToMany(() => NFTCertificate, (certificate) => certificate.user)
   certificates: NFTCertificate[];
 
   // 作为讲师创建的课程
@@ -76,4 +66,10 @@ export class User extends CommonEntity {
     cascade: true,
   })
   createdCourses: Course[];
+
+  // 作为学生购买的课程
+  @OneToMany(() => UserCourseProgress, (progress) => progress.user,{
+    cascade: true,
+  })
+  purchasedCourses: UserCourseProgress[];
 }

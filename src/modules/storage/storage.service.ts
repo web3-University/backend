@@ -15,7 +15,7 @@ export class StorachaStorageService {
 
 
 
-    if ( !this.pinataJwtToken) {
+    if (!this.pinataJwtToken) {
       throw new Error('Pinata API credentials are required. Please set PINATA_API_KEY and PINATA_SECRET_KEY in your .env file');
     }
 

@@ -28,7 +28,7 @@ import { Lesson } from './entities/lesson.entity';
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}
 
-  @Post('createCourse')
+  @Post('create')
   @ApiOperation({ summary: '创建课程（需要讲师或管理员权限）' })
   @ApiResponse({ status: 201, description: '课程创建成功', type: Course })
   @ApiResponse({ status: 400, description: '请求参数错误' })
@@ -38,7 +38,7 @@ export class CourseController {
     return await this.courseService.create(createCourseDto);
   }
 
-  @Get('myCourses')
+  @Get('my')
   @ApiOperation({ summary: '获取我创建的课程' })
   @ApiQuery({ name: 'walletAddress', required: true, description: '钱包地址' })
   @ApiQuery({
@@ -83,7 +83,7 @@ export class CourseController {
     });
   }
 
-  @Get('detailCourse')
+  @Get('detail')
   @ApiOperation({ summary: '根据ID获取课程详情' })
   @ApiResponse({ status: 200, description: '获取课程详情成功', type: Course })
   @ApiResponse({ status: 404, description: '课程不存在' })
@@ -93,7 +93,7 @@ export class CourseController {
     return await this.courseService.findOne(courseId);
   }
 
-  @Post('rateCourse')
+  @Post('rate')
   @ApiOperation({ summary: '评价课程（需要购买过课程，可重复评分）' })
   @ApiBody({
     description: '评价课程',

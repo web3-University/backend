@@ -4,6 +4,8 @@ import { WinstonModule } from 'nest-winston';
 import { UserModule } from './modules/user/user.module';
 import { CourseModule } from './modules/course/course.module';
 import { StorageModule } from './modules/storage/storage.module';
+import { CertificateModule } from './modules/certificate/certificate.module';
+import { EmailModule } from './modules/email/email.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { createDatabaseConfig } from './config/database.config';
 import { winstonConfig } from './config/winston.config';
@@ -51,6 +53,8 @@ import { AuthModule } from './modules/auth/auth.module';
     CourseModule,
     StorageModule,
     AuthModule,
+    CertificateModule,
+    EmailModule,
   ],
 })
 export class AppModule implements NestModule {

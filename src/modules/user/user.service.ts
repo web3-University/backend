@@ -141,22 +141,4 @@ export class UserService {
 
     return progressRecords.map((record) => record.course);
   }
-
-  /**
-   * 清除所有用户数据（级联删除）
-   * 利用实体级联删除配置，自动处理外键依赖
-   */
-  async clearAllUsers(): Promise<{ message: string }> {
-    try {
-      // 使用级联删除，只需要删除用户记录
-      // TypeORM会自动处理所有相关的子记录删除
-      await this.userRepository.clear();
-      console.log('✅ 所有用户数据已成功清除（级联删除）');
-
-      return { message: '所有用户数据已成功清除（级联删除）' };
-    } catch (error) {
-      console.error('❌ 清除用户数据时发生错误:', error);
-      throw new Error(`清除用户数据失败: ${error.message}`);
-    }
-  }
 }

@@ -11,21 +11,25 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { AppLoggerService } from './common/services/logger.service';
 
+let app: any;
+
 /**
  * 应用程序启动入口
  * 配置全局中间件和管道
  */
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    bufferLogs: true, // Lambda 环境下缓冲日志
+  if (app) {
+    return app;
+  }
+
+  app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
   });
 
   // 使用Winston作为应用日志
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
   const logger = app.get(AppLoggerService);
 
-  // 检查是否在Lambda环境中
-  const isLambda = !!process.env.AWS_LAMBDA_FUNCTION_NAME;
   const apiPrefix = process.env.API_PREFIX || 'api';
 
   // 设置全局前缀
@@ -70,105 +74,128 @@ async function bootstrap() {
     ],
     credentials: true,
   });
-  // Swagger 配置 - 在 Lambda 中需要特殊处理
-  logger.log(
-    `Swagger条件检查: isLambda=${isLambda}, ENABLE_SWAGGER=${process.env.ENABLE_SWAGGER}`,
-    'Bootstrap',
-  );
-  if (!isLambda || process.env.ENABLE_SWAGGER === 'true') {
-    try {
-      logger.log('正在设置 Swagger 文档...', 'Bootstrap');
 
-      const config = new DocumentBuilder()
-        .setTitle('Web3 University API')
-        .setDescription('Web3去中心化教育平台API文档')
-        .setVersion('1.0')
-        .addServer(
-          isLambda
-            ? `https://${process.env.API_GATEWAY_ID}.execute-api.${process.env.AWS_REGION}.amazonaws.com/${process.env.NODE_ENV || 'dev'}`
-            : `http://localhost:${process.env.PORT || 8051}`,
-          isLambda ? `${process.env.NODE_ENV || 'dev'} API` : 'Development API',
-        )
-        .build();
+  // Swagger 配置
+  try {
+    logger.log('正在设置 Swagger 文档...', 'Bootstrap');
 
-      const document = SwaggerModule.createDocument(app, config);
+    const config = new DocumentBuilder()
+      .setTitle('Web3 University API')
+      .setDescription('Web3去中心化教育平台API文档')
+      .setVersion('1.0')
+      .addServer(
+        process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `http://localhost:${process.env.PORT || 3000}`,
+        process.env.VERCEL_URL ? 'Production API' : 'Development API',
+      )
+      .build();
 
-      // Lambda 环境下的 Swagger 设置
-      if (isLambda) {
-        // 在 Lambda 中，直接在根路径设置 Swagger
-        SwaggerModule.setup('api-docs', app, document, {
-          swaggerOptions: {
-            persistAuthorization: true,
-            displayRequestDuration: true,
-          },
-          customSiteTitle: 'Web3 University API',
-          customCss: '.swagger-ui .topbar { display: none }',
-        });
+    const document = SwaggerModule.createDocument(app, config);
 
-        // 提供 JSON 文档端点
-        // 由于 app 不是原生 express 实例，需通过 getHttpAdapter().getInstance() 获取 express 实例
-        const httpAdapter = app.getHttpAdapter();
-        const expressApp = httpAdapter.getInstance();
-        expressApp.get('/api-docs-json', (req, res) => {
-          res.json(document);
-        });
+    // 使用自定义Swagger HTML模板
+    const swaggerDocUrl = `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `http://localhost:${process.env.PORT || 3000}`}/${apiPrefix}-json`;
 
-        logger.log('Swagger 文档已设置在 /api-docs 路径', 'Bootstrap');
-      } else {
-        // 本地开发环境
-        SwaggerModule.setup(apiPrefix, app, document, {
-          swaggerOptions: {
-            persistAuthorization: true,
-            displayRequestDuration: true,
-          },
-          customSiteTitle: 'Web3 University API - Development',
-        });
-
-        logger.log(`Swagger 文档已设置在 /${apiPrefix} 路径`, 'Bootstrap');
-      }
-
-      logger.log('Swagger 文档设置完成', 'Bootstrap');
-    } catch (error) {
-      logger.error('设置 Swagger 文档时出错:', error.message, 'Bootstrap');
-      if (!isLambda) {
-        throw error; // 本地开发环境抛出错误
-      }
-      // Lambda 环境中记录错误但继续运行
+    const customSwaggerHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Web3 University API</title>
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui.css" />
+  <link rel="icon" href="https://unpkg.com/swagger-ui-dist@4.15.5/favicon-32x32.png" />
+  <style>
+    html {
+      box-sizing: border-box;
+      overflow: -moz-scrollbars-vertical;
+      overflow-y: scroll;
     }
-  } else {
-    logger.log(
-      'Lambda 环境下跳过 Swagger 设置 (ENABLE_SWAGGER!=true)',
-      'Bootstrap',
-    );
+    *, *:before, *:after {
+      box-sizing: inherit;
+    }
+    body {
+      margin: 0;
+      background: #fafafa;
+    }
+    .swagger-ui .topbar { display: none }
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui-standalone-preset.js"></script>
+  <script>
+    window.onload = function() {
+      const ui = SwaggerUIBundle({
+        url: '${swaggerDocUrl}',
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        plugins: [
+          SwaggerUIBundle.plugins.DownloadUrl
+        ],
+        layout: "StandaloneLayout",
+        persistAuthorization: true,
+        displayRequestDuration: true
+      });
+    };
+  </script>
+</body>
+</html>`;
+
+    // 设置自定义HTML路由
+    app.getHttpAdapter().get(`/${apiPrefix}`, (req, res) => {
+      res.setHeader('Content-Type', 'text/html');
+      res.send(customSwaggerHtml);
+    });
+
+    // 设置JSON文档路由 - 直接提供JSON内容
+    app.getHttpAdapter().get(`/${apiPrefix}-json`, (req, res) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.json(document);
+    });
+
+    logger.log(`Swagger 文档已设置在 /${apiPrefix} 路径`, 'Bootstrap');
+    logger.log('Swagger 文档设置完成', 'Bootstrap');
+  } catch (error) {
+    logger.error('设置 Swagger 文档时出错:', error.message, 'Bootstrap');
+    throw error;
   }
 
-  if (!isLambda) {
-    // 本地开发环境
-    const port = process.env.PORT || 8079;
-    await app.listen(port);
-
-    logger.log(`🚀 应用程序运行在 http://localhost:${port}`, 'Bootstrap');
-    logger.log(
-      `📚 API文档地址: http://localhost:${port}/${apiPrefix}`,
-      'Bootstrap',
-    );
-    logger.log(
-      `🌐 环境: ${process.env.NODE_ENV || 'development'}`,
-      'Bootstrap',
-    );
-    logger.log(`🔗 API前缀: /${apiPrefix}`, 'Bootstrap');
-  } else {
-    // Lambda 环境
-    await app.init();
-    logger.log(`🚀 Lambda函数已初始化`, 'Bootstrap');
-    logger.log(`📚 API文档地址: /api-docs (如果启用)`, 'Bootstrap');
+  // 在Vercel环境中不启动服务器
+  if (process.env.VERCEL) {
+    logger.log('🚀 应用程序在Vercel环境中运行', 'Bootstrap');
+    logger.log(`📚 API文档地址: https://${process.env.VERCEL_URL}/${apiPrefix}`, 'Bootstrap');
     logger.log(`🌐 环境: ${process.env.NODE_ENV || 'production'}`, 'Bootstrap');
     logger.log(`🔗 API前缀: /${apiPrefix}`, 'Bootstrap');
+    return app;
   }
+
+  // 本地开发环境启动服务器
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+
+  logger.log(`🚀 应用程序运行在 http://localhost:${port}`, 'Bootstrap');
+  logger.log(
+    `📚 API文档地址: http://localhost:${port}/${apiPrefix}`,
+    'Bootstrap',
+  );
+  logger.log(
+    `🌐 环境: ${process.env.NODE_ENV || 'development'}`,
+    'Bootstrap',
+  );
+  logger.log(`🔗 API前缀: /${apiPrefix}`, 'Bootstrap');
 
   return app;
 }
-bootstrap();
 
-// 导出 bootstrap 函数供 Lambda 使用
-export default bootstrap;
+// Vercel无服务器函数导出
+export default async (req: any, res: any) => {
+  const nestApp = await bootstrap();
+  return nestApp.getHttpAdapter().getInstance()(req, res);
+};
+
+// 本地开发环境启动
+if (!process.env.VERCEL) {
+  bootstrap();
+}

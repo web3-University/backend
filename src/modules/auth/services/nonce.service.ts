@@ -1,38 +1,39 @@
 import { Injectable, Logger } from '@nestjs/common';
-import Redis from 'ioredis';
+// import Redis from 'ioredis'; // Redis支持已禁用
 import { randomBytes } from 'crypto';
 
 /**
  * Nonce 管理服务
- * 使用 Redis 存储和验证 Nonce，防止重放攻击
+ * Redis支持已禁用，使用内存存储（仅用于测试）
  */
 @Injectable()
 export class NonceService {
   private readonly logger = new Logger(NonceService.name);
-  private readonly redis: Redis;
+  // private readonly redis: Redis; // Redis支持已禁用
   private readonly NONCE_PREFIX = 'nonce:';
   private readonly NONCE_TTL = 5 * 60; // 5分钟（秒）
+  private readonly nonceStore = new Map<string, { timestamp: number; used: boolean }>(); // 内存存储
 
   constructor() {
-    // 初始化 Redis 客户端
-    this.redis = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379'),
-      password: process.env.REDIS_PASSWORD || undefined,
-      db: parseInt(process.env.REDIS_DB || '0'),
-      retryStrategy: (times) => {
-        const delay = Math.min(times * 50, 2000);
-        return delay;
-      },
-    });
+    // Redis支持已禁用
+    this.logger.warn('⚠️ Redis支持已禁用，使用内存存储（仅用于测试）');
+    
+    // 清理过期的nonce（每5分钟）
+    setInterval(() => {
+      this.cleanupExpiredNonces();
+    }, 5 * 60 * 1000);
+  }
 
-    this.redis.on('connect', () => {
-      this.logger.log('✅ Redis 连接成功');
-    });
-
-    this.redis.on('error', (error) => {
-      this.logger.error(`❌ Redis 连接错误: ${error.message}`);
-    });
+  /**
+   * 清理过期的nonce
+   */
+  private cleanupExpiredNonces() {
+    const now = Date.now();
+    for (const [key, value] of this.nonceStore.entries()) {
+      if (now - value.timestamp > this.NONCE_TTL * 1000) {
+        this.nonceStore.delete(key);
+      }
+    }
   }
 
   /**
@@ -44,8 +45,11 @@ export class NonceService {
     const nonce = randomBytes(16).toString('hex');
     const key = this.getNonceKey(walletAddress, nonce);
 
-    // 存储到 Redis，设置过期时间
-    await this.redis.setex(key, this.NONCE_TTL, 'unused');
+    // 存储到内存，设置过期时间
+    this.nonceStore.set(key, {
+      timestamp: Date.now(),
+      used: false
+    });
 
     this.logger.debug(`为地址 ${walletAddress} 生成 Nonce: ${nonce}`);
     return nonce;
@@ -64,20 +68,20 @@ export class NonceService {
     const key = this.getNonceKey(walletAddress, nonce);
 
     // 获取 Nonce 状态
-    const value = await this.redis.get(key);
+    const value = this.nonceStore.get(key);
 
     if (!value) {
       this.logger.warn(`Nonce 不存在或已过期: ${nonce}`);
       return false;
     }
 
-    if (value === 'used') {
+    if (value.used) {
       this.logger.warn(`Nonce 已被使用: ${nonce}`);
       return false;
     }
 
-    // 标记为已使用（仍保留到过期，避免重放）
-    await this.redis.setex(key, this.NONCE_TTL, 'used');
+    // 标记为已使用
+    value.used = true;
 
     this.logger.debug(`Nonce 验证成功并已消费: ${nonce}`);
     return true;
@@ -91,8 +95,8 @@ export class NonceService {
    */
   async isNonceValid(walletAddress: string, nonce: string): Promise<boolean> {
     const key = this.getNonceKey(walletAddress, nonce);
-    const value = await this.redis.get(key);
-    return value === 'unused';
+    const value = this.nonceStore.get(key);
+    return value ? !value.used : false;
   }
 
   /**
@@ -100,13 +104,19 @@ export class NonceService {
    * @param walletAddress 钱包地址
    */
   async clearNonces(walletAddress: string): Promise<void> {
-    const pattern = `${this.NONCE_PREFIX}${walletAddress}:*`;
-    const keys = await this.redis.keys(pattern);
+    const pattern = `${this.NONCE_PREFIX}${walletAddress}:`;
+    let count = 0;
+    
+    for (const key of this.nonceStore.keys()) {
+      if (key.startsWith(pattern)) {
+        this.nonceStore.delete(key);
+        count++;
+      }
+    }
 
-    if (keys.length > 0) {
-      await this.redis.del(...keys);
+    if (count > 0) {
       this.logger.debug(
-        `已清除地址 ${walletAddress} 的 ${keys.length} 个 Nonce`,
+        `已清除地址 ${walletAddress} 的 ${count} 个 Nonce`,
       );
     }
   }
@@ -122,10 +132,10 @@ export class NonceService {
   }
 
   /**
-   * 关闭 Redis 连接（在应用关闭时调用）
+   * 关闭连接（在应用关闭时调用）
    */
   async onModuleDestroy() {
-    await this.redis.quit();
-    this.logger.log('Redis 连接已关闭');
+    // Redis支持已禁用，无需关闭连接
+    this.logger.log('NonceService 已关闭');
   }
 }

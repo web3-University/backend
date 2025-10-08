@@ -38,7 +38,10 @@ lerna-debug.log*
 # dotenv environment variable files
 .env
 .env.production
+.env.vercel
 
+# Vercel
+.vercel
 
 # temp directory
 .temp
@@ -59,10 +62,8 @@ localStoreData/
 # layer
 layer/
 
-# aws sam
-.aws-sam/
-
 # Claude Code local settings
 .claude/
 
 dist
+.vercel

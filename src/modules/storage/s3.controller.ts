@@ -34,13 +34,6 @@ export class S3Controller {
     private readonly s3Service: S3Service,
   ) {}
 
-  @Get('test')
-  @ApiOperation({ summary: '测试接口' })
-  @ApiResponse({ status: 200, description: '测试接口成功' })
-  async test(): Promise<{ message: string }> {
-    return { message: '测试接口成功' };
-  }
-
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({ summary: '上传单个文件' })
@@ -85,7 +78,7 @@ export class S3Controller {
       throw new BadRequestException('请指定文件类型');
     }
 
-    return await this.s3Service.uploadFile(file, fileType);
+    return await this.s3Service.uploadFile(file);
   }
 
   @Post('upload-multiple')
@@ -131,7 +124,7 @@ export class S3Controller {
       throw new BadRequestException('请指定文件类型');
     }
 
-    return await this.s3Service.uploadMultipleFiles(files, fileType);
+    throw new BadRequestException('批量上传功能已禁用，请配置其他存储方案');
   }
 
   // 先这个接口生成url，前端直接去连接 s3 上传
@@ -149,11 +142,7 @@ export class S3Controller {
   async generatePresignedUrl(
     @Body() generatePresignedUrlDto: GeneratePresignedUrlDto,
   ): Promise<PresignedUrlResponseDto> {
-    return await this.s3Service.generatePresignedUploadUrl(
-      generatePresignedUrlDto.fileType,
-      generatePresignedUrlDto.fileName,
-      generatePresignedUrlDto.contentType,
-    );
+    throw new BadRequestException('预签名URL功能已禁用，请配置其他存储方案');
   }
 
   @Delete(':key')

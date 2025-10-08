@@ -55,44 +55,6 @@ src/
 1. 📋 社区模块
 2. 📋 管理员模块
 
-## AWS Lambda 部署说明
-
-### Lambda Layer 大小限制
-
-**重要提醒：AWS Lambda Layer 有固定的大小限制，无法修改：**
-
-- **单个Layer压缩包大小限制：50 MB**
-- **解压后总大小限制：250 MB**（包括所有层和函数代码）
-- **每个Lambda函数最多可添加5个层**
-
-### Layer 优化配置
-
-项目已配置Lambda Layer来优化部署包大小：
-
-1. **Layer定义**：在`template.yaml`中定义了`NodejsLayer`
-2. **大小检查**：使用`pnpm run check:layer-size`检查Layer大小
-3. **优化安装**：使用`--no-optional`和`.npmrc`配置减少依赖大小
-
-### 部署命令
-
-```bash
-# 构建Layer和Lambda函数
-pnpm run build
-
-# 检查Layer大小（可选）
-pnpm run check:layer-size
-
-# 部署到AWS
-pnpm run deploy
-```
-
-### 如果Layer超过大小限制
-
-如果Layer超过50MB限制，建议：
-
-1. **移除不必要的依赖**：检查`package.json`中的依赖
-2. **使用S3存储**：将大型资源存储在S3中
-3. **容器部署**：考虑使用容器映像部署（支持10GB）
 
 ## 本地开发说明
 
@@ -154,6 +116,14 @@ pnpm run build
 pnpm run start:prod
 ```
 
+### 部署说明
+
+项目支持多种部署方式：
+
+1. **Docker部署**：使用Docker Compose进行容器化部署
+2. **传统服务器部署**：在Linux/Windows服务器上直接运行
+3. **云服务部署**：支持各大云服务商的标准部署方式
+
 ## API接口设计
 
 [项目设计文档](./project-design.md)
@@ -181,6 +151,7 @@ pnpm run start:prod
    - 课程内容存储在Storacha IPFS
 8. **Gas费优化**：合理设计智能合约，减少Gas消耗
 9. **多链支持**：后续可扩展支持Polygon、BSC等链
+10. **灵活部署**：支持Docker、传统服务器、云服务等多种部署方式
 
 ## 实体设计分析报告
 
@@ -331,6 +302,71 @@ Course (1) ←→ (N) LearningProgress
 - 初始项目结构
 - 用户管理模块基础功能
 - API接口设计文档
+
+## 🚀 部署到 Vercel
+
+### 快速部署
+
+1. **安装 Vercel CLI**
+   ```bash
+   npm i -g vercel
+   ```
+
+2. **登录 Vercel**
+   ```bash
+   vercel login
+   ```
+
+3. **部署项目**
+   ```bash
+   vercel --prod
+   ```
+
+### 环境变量配置
+
+在 Vercel Dashboard 中设置以下环境变量：
+
+```bash
+# 数据库配置
+DATABASE_HOST=your_database_host
+DATABASE_PORT=5432
+DATABASE_USERNAME=your_username
+DATABASE_PASSWORD=your_password
+DATABASE_NAME=your_database_name
+
+# JWT 配置
+JWT_SECRET=your_jwt_secret_key
+JWT_EXPIRES_IN=7d
+
+# Redis 配置
+REDIS_HOST=your_redis_host
+REDIS_PORT=6379
+REDIS_PASSWORD=your_redis_password
+
+# 邮件配置
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USER=your_email@gmail.com
+MAIL_PASS=your_app_password
+
+# Pinata IPFS 配置
+PINATA_API_KEY=your_pinata_api_key
+PINATA_SECRET_KEY=your_pinata_secret_key
+
+# Web3 配置
+WEB3_RPC_URL=https://mainnet.infura.io/v3/your_infura_key
+WEB3_PRIVATE_KEY=your_private_key
+
+# 应用配置
+APP_PORT=3000
+APP_ENV=production
+APP_URL=https://your-app.vercel.app
+CORS_ORIGIN=https://your-frontend.vercel.app
+```
+
+### 详细部署指南
+
+查看 [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) 获取完整的部署配置说明。
 
 ---
 

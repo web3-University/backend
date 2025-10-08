@@ -43,6 +43,10 @@ export class Course extends CommonEntity {
   @Column()
   instructorWallet: string;
 
+  // 讲师名称
+  @Column({ nullable: true })
+  instructorName: string;
+
   // 课程分类
   @Column({ type: 'json' })
   categories: string[]; // 如 "区块链基础"
@@ -55,22 +59,13 @@ export class Course extends CommonEntity {
   @Column({ type: 'varchar', length: 50, default: '0' })
   price: string; // YD币价格，使用字符串存储大数
 
-  // 课程时长和统计
+  // 课程时长
   @Column({ default: 0 })
   duration: number; // 总时长（分钟）
-
-  @Column({ default: 0 })
-  studentCount: number; // 学生数量
-
-  @Column({ default: 0 })
-  lessonCount: number; // 课时数量
 
   // 评分和评价
   @Column({ type: 'float', default: 0 })
   rating: number;
-
-  @Column({ default: 0 })
-  reviewCount: number; // 评价数量
 
   // 课程状态 草稿 等待审核 已发布 已拒绝
   @Column({ default: COURSE_STATUS.DRAFT })
@@ -92,10 +87,6 @@ export class Course extends CommonEntity {
   @Column({ type: 'json', nullable: true })
   prerequisites?: string[];
 
-  // Web3相关
-  @Column({ nullable: true })
-  nftContract?: string; // NFT证书合约地址
-
   // 关联关系
   // 讲师关系
   @ManyToOne(() => User, (user) => user.createdCourses)
@@ -116,9 +107,7 @@ export class Course extends CommonEntity {
   userProgresses: UserCourseProgress[];
 
   // NFT证书记录
-  @OneToMany(() => NFTCertificate, (certificate) => certificate.courseId, {
-    cascade: true,
-  })
+  @OneToMany(() => NFTCertificate, (certificate) => certificate.courseId)
   certificates: NFTCertificate[];
 
   // 获取购买此课程的用户
@@ -161,6 +150,26 @@ export class Course extends CommonEntity {
     );
   }
 
+  // 获取课程课时数量（动态计算）
+  get lessonCount(): number {
+    return this.lessons?.length || 0;
+  }
+
+  // 获取课程学生数量（动态计算）
+  get studentCount(): number {
+    return this.purchasedUsers.length;
+  }
+
+  // 获取课程评价数量（动态计算）
+  get reviewCount(): number {
+    return (
+      this.userProgresses?.filter(
+        (progress) =>
+          progress.userRating !== null && progress.userRating !== undefined,
+      ).length || 0
+    );
+  }
+
   // 获取课程平均评分
   get averageRating(): number {
     const ratings =
@@ -173,5 +182,27 @@ export class Course extends CommonEntity {
 
     if (ratings.length === 0) return 0;
     return ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length;
+  }
+
+  // 获取课程评价详情（谁评价了，评价了多少分）
+  get reviewDetails(): Array<{
+    walletAddress: string;
+    rating: number;
+    ratedAt: Date;
+    username?: string;
+  }> {
+    return (
+      this.userProgresses
+        ?.filter(
+          (progress) =>
+            progress.userRating !== null && progress.userRating !== undefined,
+        )
+        ?.map((progress) => ({
+          walletAddress: progress.walletAddress,
+          rating: progress.userRating!,
+          ratedAt: progress.ratedAt!,
+          username: progress.user?.username,
+        })) || []
+    );
   }
 }

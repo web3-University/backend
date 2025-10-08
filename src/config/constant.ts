@@ -23,3 +23,19 @@ export const LEARNING_STATUS = {
   IN_PROGRESS: '2',
   COMPLETED: '3',
 };
+
+// 章节状态
+export const LESSON_STATUS = {
+  DRAFT: '1',
+  PUBLISHED: '2',
+  ARCHIVED: '3',
+};
+
+// 章节类型
+export const LESSON_TYPE = {
+  VIDEO: '1',
+  TEXT: '2',
+  QUIZ: '3',
+  ASSIGNMENT: '4',
+  LIVE: '5',
+};

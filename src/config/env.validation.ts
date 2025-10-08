@@ -33,19 +33,21 @@ const envSchema = z.object({
     .string()
     .min(1, { message: 'JWT_REFRESH_SECRET 不能为空' }),
 
-  // Redis 配置（用于 Nonce 管理）
-  REDIS_HOST: z.string().min(1, { message: 'REDIS_HOST 不能为空' }),
+  // Redis 配置（用于 Nonce 管理）- 已禁用
+  REDIS_HOST: z.string().optional(),
   REDIS_PORT: z
     .string()
     .default('6379')
     .transform((val) => parseInt(val, 10))
-    .pipe(z.number().min(1).max(65535)),
+    .pipe(z.number().min(1).max(65535))
+    .optional(),
   REDIS_PASSWORD: z.string().optional(),
   REDIS_DB: z
     .string()
     .default('0')
     .transform((val) => parseInt(val, 10))
-    .pipe(z.number().min(0).max(15)),
+    .pipe(z.number().min(0).max(15))
+    .optional(),
 
   // Web3 Auth 配置
   APP_DOMAIN: z.string().min(1, { message: 'APP_DOMAIN 不能为空' }),

@@ -55,14 +55,6 @@ export class UserController {
     return this.userService.findByWalletAddress(walletAddress);
   }
 
-  // 清除所有用户
-  @Post('clearAllUsers')
-  @ApiOperation({ summary: '清除所有用户' })
-  @ApiResponse({ status: 200, description: '清除用户成功' })
-  clearAllUsers(): Promise<{ message: string }> {
-    return this.userService.clearAllUsers();
-  }
-
   // 用户购买课程
   @Post('purchaseCourse')
   @ApiOperation({ summary: '用户购买课程' })

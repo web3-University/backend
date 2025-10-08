@@ -39,6 +39,10 @@ export class NFTCertificate extends CommonEntity {
   @Column()
   metadata: string;
 
+  // NFT预览链接
+  @Column({ nullable: true })
+  nftUrl: string;
+
   // 铸造交易哈希
   @Column()
   transactionHash: string;

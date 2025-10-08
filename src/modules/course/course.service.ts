@@ -75,6 +75,7 @@ export class CourseService {
     return await this.courseRepository.find({
       where: { instructorWallet: user.walletAddress },
       order: { createdAt: 'DESC' },
+      relations: ['lessons', 'userProgresses'], // 包含关联数据以支持动态计算
       skip: (page - 1) * limit,
       take: limit,
     });
@@ -106,6 +107,7 @@ export class CourseService {
         price: priceRange ? Between(priceRange[0], priceRange[1]) : undefined,
         title: keyword ? Like(`%${keyword}%`) : undefined,
       },
+      relations: ['lessons', 'userProgresses'], // 包含关联数据以支持动态计算
       // status: COURSE_STATUS.PUBLISHED,
       skip: (page - 1) * limit,
       take: limit,
@@ -119,6 +121,7 @@ export class CourseService {
   async findOne(courseId: number): Promise<Course> {
     const course = await this.courseRepository.findOne({
       where: { courseId: courseId },
+      relations: ['lessons', 'userProgresses'], // 包含关联数据以支持动态计算
     });
     if (!course) {
       throw new NotFoundException(`课程ID ${courseId} 不存在`);
@@ -177,7 +180,7 @@ export class CourseService {
 
     // 更新课程评分
     course.rating = Math.round(averageRating * 100) / 100; // 保留两位小数
-    course.reviewCount = allRatings.length;
+    // reviewCount 现在通过 getter 方法动态计算，无需手动更新
 
     return await this.courseRepository.save(course);
   }

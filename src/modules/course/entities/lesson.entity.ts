@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { Course } from './course.entity';
 import { UserLessonProgress } from './user-lesson.entity';
-
+import { LESSON_STATUS, LESSON_TYPE } from 'src/config/constant';
 /**
  * 章节实体 - 单个课程章节
  * 属于某个课程的具体章节内容
@@ -44,11 +44,9 @@ export class Lesson extends CommonEntity {
 
   // 章节类型
   @Column({
-    type: 'enum',
-    enum: ['video', 'text', 'quiz', 'assignment', 'live'],
-    default: 'video',
+    default: LESSON_TYPE.VIDEO,
   })
-  type: 'video' | 'text' | 'quiz' | 'assignment' | 'live';
+  type: string;
 
   // 是否免费预览
   @Column({ default: false })
@@ -56,11 +54,9 @@ export class Lesson extends CommonEntity {
 
   // 章节状态
   @Column({
-    type: 'enum',
-    enum: ['draft', 'published', 'archived'],
-    default: 'draft',
+    default: LESSON_STATUS.DRAFT,
   })
-  status: 'draft' | 'published' | 'archived';
+  status: string;
 
   // 附件资源
   @Column({ type: 'json', nullable: true })
@@ -74,7 +70,6 @@ export class Lesson extends CommonEntity {
   @JoinColumn({ name: 'courseId' })
   course: Course;
 
-  // 关联关系 - 级联删除配置
   // 用户章节学习进度
   @OneToMany(() => UserLessonProgress, (progress) => progress.lesson, {
     cascade: true,

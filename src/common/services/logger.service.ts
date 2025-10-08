@@ -5,9 +5,8 @@ import { createLogger, format, Logger, transports } from 'winston';
 export class AppLoggerService implements LoggerService {
   private logger: Logger;
   constructor() {
-    // 检查是否在Lambda环境中
-    const isLambda = process.env.AWS_LAMBDA_FUNCTION_NAME !== undefined;
-
+    const isVercel = process.env.VERCEL === '1';
+    
     this.logger = createLogger({
       level: 'debug',
       format: format.combine(
@@ -16,39 +15,40 @@ export class AppLoggerService implements LoggerService {
       ),
       transports: [
         new transports.Console(),
-        // 只在非Lambda环境中使用文件输出
-        ...(isLambda ? [] : [
+        // 只在非Vercel环境中使用文件日志
+        ...(isVercel ? [] : [
+          // 文件输出
           new transports.File({
             filename: 'logs/combined.log',
-            format: format.combine(
-              format.timestamp(),
-              format.json()
-            ),
-          }),
-          new transports.File({
-            filename: 'logs/error.log',
-            level: 'error',
-            format: format.combine(
-              format.timestamp(),
-              format.json()
-            ),
-          }),
-          new transports.File({
-            filename: 'logs/exceptions.log',
-            level: 'error',
-            format: format.combine(
-              format.timestamp(),
-              format.json()
-            ),
-          }),
-          new transports.File({
-            filename: 'logs/rejections.log',
-            level: 'error',
-            format: format.combine(
-              format.timestamp(),
-              format.json()
-            ),
-          }),
+              format: format.combine(
+                format.timestamp(),
+                format.json()
+              ),
+            }),
+            new transports.File({
+              filename: 'logs/error.log',
+              level: 'error',
+              format: format.combine(
+                format.timestamp(),
+                format.json()
+              ),
+            }),
+            new transports.File({
+              filename: 'logs/exceptions.log',
+              level: 'error',
+              format: format.combine(
+                format.timestamp(),
+                format.json()
+              ),
+            }),
+            new transports.File({
+              filename: 'logs/rejections.log',
+              level: 'error',
+              format: format.combine(
+                format.timestamp(),
+                format.json()
+              ),
+            }),
         ]),
       ],
     });
