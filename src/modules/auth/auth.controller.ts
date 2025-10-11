@@ -11,6 +11,8 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
+import { Throttle } from '@nestjs/throttler';
+
 import { AuthService } from './auth.service';
 import { NonceRequestDto } from './dto/nonce-request.dto';
 import { NonceResponseDto } from './dto/nonce-response.dto';
@@ -21,7 +23,6 @@ import { RefreshTokenResponseDto } from './dto/refresh-token-response.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { Throttle } from '@nestjs/throttler';
 import {
   NonceApiDoc,
   LoginApiDoc,

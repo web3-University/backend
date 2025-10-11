@@ -8,6 +8,8 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
+import { randomUUID } from 'crypto';
+
 import { User } from '../user/entities/user.entity';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { NonceService } from './services/nonce.service';
@@ -16,7 +18,7 @@ import { LoginDto } from './dto/login.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { NonceResponseDto } from './dto/nonce-response.dto';
 import { RefreshTokenResponseDto } from './dto/refresh-token-response.dto';
-import { randomUUID } from 'crypto';
+import { getErrorMessage } from '../../utils/getErrorMessage';
 
 /**
  * 认证服务
@@ -125,8 +127,7 @@ export class AuthService {
         throw new UnauthorizedException('Nonce 无效或已使用');
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = getErrorMessage(error);
       this.logger.error(`SIWE 消息验证失败: ${errorMessage}`);
       throw new UnauthorizedException('消息验证失败');
     }
@@ -223,8 +224,7 @@ export class AuthService {
         expiresIn: this.accessTokenExpiry,
       };
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = getErrorMessage(error);
       this.logger.error(`Token 刷新失败: ${errorMessage}`);
       throw new UnauthorizedException('Refresh Token 无效');
     }

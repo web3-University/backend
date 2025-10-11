@@ -2,6 +2,8 @@ import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { verifyMessage } from 'ethers';
 import { SiweMessage } from 'siwe';
 
+import { getErrorMessage } from '../../../utils/getErrorMessage';
+
 /**
  * Web3 签名验证服务
  * 负责验证以太坊钱包签名
@@ -38,8 +40,7 @@ export class Web3VerifyService {
 
       return isValid;
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = getErrorMessage(error);
       this.logger.error(`签名验证异常: ${errorMessage}`);
       return false;
     }
@@ -69,8 +70,7 @@ export class Web3VerifyService {
 
       return fields.data;
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = getErrorMessage(error);
       this.logger.error(`SIWE 消息验证失败: ${errorMessage}`);
       throw new UnauthorizedException('签名验证失败');
     }
