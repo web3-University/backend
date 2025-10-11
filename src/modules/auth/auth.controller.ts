@@ -39,6 +39,7 @@ import {
  * 处理 Web3 认证相关的 HTTP 请求
  */
 @ApiTags('认证管理')
+@UseGuards(JwtAuthGuard)
 @Controller({
   path: 'auth',
   version: '1',
@@ -106,7 +107,6 @@ export class AuthController {
   /**
    * 登出（撤销当前 Token）
    */
-  @UseGuards(JwtAuthGuard)
   @Post('logout')
   @LogoutApiDoc()
   async logout(@CurrentUser('walletAddress') walletAddress: string) {
@@ -117,7 +117,6 @@ export class AuthController {
   /**
    * 获取当前用户信息
    */
-  @UseGuards(JwtAuthGuard)
   @Get('me')
   @GetMeApiDoc()
   getMe(
@@ -134,7 +133,6 @@ export class AuthController {
   /**
    * 获取所有活动会话
    */
-  @UseGuards(JwtAuthGuard)
   @Get('sessions')
   @GetSessionsApiDoc()
   async getSessions(@CurrentUser('walletAddress') walletAddress: string) {
@@ -155,7 +153,6 @@ export class AuthController {
   /**
    * 撤销指定会话
    */
-  @UseGuards(JwtAuthGuard)
   @Delete('sessions/:sessionId')
   @RevokeSessionApiDoc()
   async revokeSession(
@@ -169,7 +166,6 @@ export class AuthController {
   /**
    * 撤销所有会话（登出所有设备）
    */
-  @UseGuards(JwtAuthGuard)
   @Post('logout-all')
   @LogoutAllApiDoc()
   async logoutAll(@CurrentUser('walletAddress') walletAddress: string) {

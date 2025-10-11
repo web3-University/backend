@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Get,
-  Query,
-} from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, UseGuards } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -12,9 +6,12 @@ import {
   ApiBody,
   ApiQuery,
 } from '@nestjs/swagger';
+
 import { EmailService } from './email.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('邮件服务')
+@UseGuards(JwtAuthGuard)
 @Controller('email')
 export class EmailController {
   constructor(private readonly emailService: EmailService) {}
@@ -26,10 +23,26 @@ export class EmailController {
     schema: {
       type: 'object',
       properties: {
-        to: { type: 'string', description: '收件人邮箱', example: 'user@example.com' },
-        subject: { type: 'string', description: '邮件主题', example: '测试邮件' },
-        content: { type: 'string', description: '邮件内容', example: '<h1>Hello World!</h1>' },
-        isHtml: { type: 'boolean', description: '是否为HTML格式', example: true },
+        to: {
+          type: 'string',
+          description: '收件人邮箱',
+          example: 'user@example.com',
+        },
+        subject: {
+          type: 'string',
+          description: '邮件主题',
+          example: '测试邮件',
+        },
+        content: {
+          type: 'string',
+          description: '邮件内容',
+          example: '<h1>Hello World!</h1>',
+        },
+        isHtml: {
+          type: 'boolean',
+          description: '是否为HTML格式',
+          example: true,
+        },
       },
       required: ['to', 'subject', 'content'],
     },
@@ -63,9 +76,21 @@ export class EmailController {
     schema: {
       type: 'object',
       properties: {
-        userEmail: { type: 'string', description: '用户邮箱', example: 'user@example.com' },
-        username: { type: 'string', description: '用户名（可选）', example: '张三' },
-        walletAddress: { type: 'string', description: '钱包地址（可选）', example: '0x1234...5678' },
+        userEmail: {
+          type: 'string',
+          description: '用户邮箱',
+          example: 'user@example.com',
+        },
+        username: {
+          type: 'string',
+          description: '用户名（可选）',
+          example: '张三',
+        },
+        walletAddress: {
+          type: 'string',
+          description: '钱包地址（可选）',
+          example: '0x1234...5678',
+        },
       },
       required: ['userEmail'],
     },
@@ -77,7 +102,11 @@ export class EmailController {
     @Body('walletAddress') walletAddress?: string,
   ): Promise<{ success: boolean; message: string }> {
     try {
-      await this.emailService.sendWelcomeEmail(userEmail, username, walletAddress);
+      await this.emailService.sendWelcomeEmail(
+        userEmail,
+        username,
+        walletAddress,
+      );
       return {
         success: true,
         message: '欢迎邮件发送成功',
@@ -97,11 +126,31 @@ export class EmailController {
     schema: {
       type: 'object',
       properties: {
-        userEmail: { type: 'string', description: '用户邮箱', example: 'user@example.com' },
-        username: { type: 'string', description: '用户名（可选）', example: '张三' },
-        walletAddress: { type: 'string', description: '钱包地址（可选）', example: '0x1234...5678' },
-        courseTitle: { type: 'string', description: '课程标题', example: '区块链基础课程' },
-        certificateUrl: { type: 'string', description: '证书链接', example: 'https://example.com/certificate' },
+        userEmail: {
+          type: 'string',
+          description: '用户邮箱',
+          example: 'user@example.com',
+        },
+        username: {
+          type: 'string',
+          description: '用户名（可选）',
+          example: '张三',
+        },
+        walletAddress: {
+          type: 'string',
+          description: '钱包地址（可选）',
+          example: '0x1234...5678',
+        },
+        courseTitle: {
+          type: 'string',
+          description: '课程标题',
+          example: '区块链基础课程',
+        },
+        certificateUrl: {
+          type: 'string',
+          description: '证书链接',
+          example: 'https://example.com/certificate',
+        },
       },
       required: ['userEmail', 'courseTitle', 'certificateUrl'],
     },
@@ -140,12 +189,36 @@ export class EmailController {
     schema: {
       type: 'object',
       properties: {
-        userEmail: { type: 'string', description: '用户邮箱', example: 'user@example.com' },
-        username: { type: 'string', description: '用户名（可选）', example: '张三' },
-        walletAddress: { type: 'string', description: '钱包地址（可选）', example: '0x1234...5678' },
-        courseTitle: { type: 'string', description: '课程标题', example: '区块链基础课程' },
-        nftUrl: { type: 'string', description: 'NFT链接', example: 'https://gateway.pinata.cloud/ipfs/QmHash' },
-        tokenId: { type: 'string', description: 'Token ID', example: '1-1640995200000-abc123def' },
+        userEmail: {
+          type: 'string',
+          description: '用户邮箱',
+          example: 'user@example.com',
+        },
+        username: {
+          type: 'string',
+          description: '用户名（可选）',
+          example: '张三',
+        },
+        walletAddress: {
+          type: 'string',
+          description: '钱包地址（可选）',
+          example: '0x1234...5678',
+        },
+        courseTitle: {
+          type: 'string',
+          description: '课程标题',
+          example: '区块链基础课程',
+        },
+        nftUrl: {
+          type: 'string',
+          description: 'NFT链接',
+          example: 'https://gateway.pinata.cloud/ipfs/QmHash',
+        },
+        tokenId: {
+          type: 'string',
+          description: 'Token ID',
+          example: '1-1640995200000-abc123def',
+        },
       },
       required: ['userEmail', 'courseTitle', 'nftUrl', 'tokenId'],
     },

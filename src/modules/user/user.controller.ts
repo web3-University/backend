@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -7,17 +15,20 @@ import {
   ApiQuery,
   ApiBody,
 } from '@nestjs/swagger';
+
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { UserCourseProgress } from '../course/entities/user-course.entity';
 import { Course } from '../course/entities/course.entity';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 /**
  * 用户控制器
  * 处理用户相关的HTTP请求
  */
 @ApiTags('用户管理')
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
