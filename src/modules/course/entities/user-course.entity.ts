@@ -16,7 +16,9 @@ import { LEARNING_STATUS } from '../../../config/constant';
  * 记录用户与课程的完整关系：购买、学习进度、评分等
  */
 @Entity('user_course_progress')
-@Index(['walletAddress', 'courseId'], { unique: true }) // 确保用户-课程组合唯一
+@Index(['userId', 'courseId'], { unique: true }) // 确保用户-课程组合唯一
+@Index(['courseId', 'status']) // 课程状态查询优化
+@Index(['isPurchased']) // 购买状态查询优化
 export class UserCourseProgress extends CommonEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -25,9 +27,9 @@ export class UserCourseProgress extends CommonEntity {
   @Column()
   courseId: number;
 
-  // 用户钱包地址
+  // 用户ID
   @Column()
-  walletAddress: string;
+  userId: number;
 
   // 购买相关字段
   @Column({ default: false })
@@ -58,7 +60,7 @@ export class UserCourseProgress extends CommonEntity {
   @ManyToOne(() => User, (user) => user.courseProgresses, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'walletAddress', referencedColumnName: 'walletAddress' })
+  @JoinColumn({ name: 'userId', referencedColumnName: 'userId' })
   user: User;
 
   // 关联课程

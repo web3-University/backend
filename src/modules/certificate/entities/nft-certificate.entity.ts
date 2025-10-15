@@ -5,12 +5,15 @@ import {
   ManyToOne,
   JoinColumn,
   PrimaryGeneratedColumn,
+  Index,
 } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Course } from '../../course/entities/course.entity';
 
 // nft 要与课程表关联
 @Entity()
+@Index(['userId']) // 用户查询优化
+@Index(['courseId']) // 课程查询优化
 export class NFTCertificate extends CommonEntity {
   @PrimaryGeneratedColumn()
   certificateId: number;
@@ -23,9 +26,9 @@ export class NFTCertificate extends CommonEntity {
   @Column()
   contractAddress: string;
 
-  // 拥有者钱包地址
+  // 拥有者用户ID
   @Column()
-  walletAddress: string;
+  userId: number;
 
   // 关联课程ID
   @Column()
@@ -53,7 +56,7 @@ export class NFTCertificate extends CommonEntity {
 
   // 关联用户
   @ManyToOne(() => User, (user) => user.certificates)
-  @JoinColumn({ name: 'walletAddress', referencedColumnName: 'walletAddress' })
+  @JoinColumn({ name: 'userId', referencedColumnName: 'userId' })
   user: User;
 
   // 关联课程

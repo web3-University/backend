@@ -15,22 +15,20 @@ import { Lesson } from './lesson.entity';
  * 关联表设计，存储用户与章节的详细学习记录
  */
 @Entity('user_lesson_progress')
-@Index(['walletAddress', 'lessonId'], { unique: true }) // 确保用户-章节组合唯一
+@Index(['userId', 'lessonId'], { unique: true }) // 确保用户-章节组合唯一
+@Index(['lessonId', 'status']) // 章节状态查询优化
+@Index(['isCompleted']) // 完成状态查询优化
 export class UserLessonProgress extends CommonEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // 用户钱包地址
+  // 用户ID
   @Column()
-  walletAddress: string;
+  userId: number;
 
   // 章节ID
   @Column()
   lessonId: number;
-
-  // 课程ID
-  @Column()
-  courseId: number;
 
   // 是否完成章节
   @Column({ default: false })
@@ -76,7 +74,7 @@ export class UserLessonProgress extends CommonEntity {
   @ManyToOne(() => User, (user) => user.lessonProgresses, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'walletAddress', referencedColumnName: 'walletAddress' })
+  @JoinColumn({ name: 'userId', referencedColumnName: 'userId' })
   user: User;
 
   // 关联章节

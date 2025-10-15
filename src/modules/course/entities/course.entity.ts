@@ -39,13 +39,9 @@ export class Course extends CommonEntity {
   @Column({ nullable: true })
   cover?: string;
 
-  // 讲师钱包地址
+  // 讲师ID
   @Column()
-  instructorWallet: string;
-
-  // 讲师名称
-  @Column({ nullable: true })
-  instructorName: string;
+  instructorId: number;
 
   // 课程分类
   @Column({ type: 'json' })
@@ -91,8 +87,8 @@ export class Course extends CommonEntity {
   // 讲师关系
   @ManyToOne(() => User, (user) => user.createdCourses)
   @JoinColumn({
-    name: 'instructorWallet',
-    referencedColumnName: 'walletAddress',
+    name: 'instructorId',
+    referencedColumnName: 'userId',
   })
   instructor: User;
 
@@ -107,7 +103,7 @@ export class Course extends CommonEntity {
   userProgresses: UserCourseProgress[];
 
   // NFT证书记录
-  @OneToMany(() => NFTCertificate, (certificate) => certificate.courseId)
+  @OneToMany(() => NFTCertificate, (certificate) => certificate.course)
   certificates: NFTCertificate[];
 
   // 获取购买此课程的用户
@@ -186,7 +182,7 @@ export class Course extends CommonEntity {
 
   // 获取课程评价详情（谁评价了，评价了多少分）
   get reviewDetails(): Array<{
-    walletAddress: string;
+    userId: number;
     rating: number;
     ratedAt: Date;
     username?: string;
@@ -198,7 +194,7 @@ export class Course extends CommonEntity {
             progress.userRating !== null && progress.userRating !== undefined,
         )
         ?.map((progress) => ({
-          walletAddress: progress.walletAddress,
+          userId: progress.userId,
           rating: progress.userRating!,
           ratedAt: progress.ratedAt!,
           username: progress.user?.username,

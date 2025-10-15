@@ -66,10 +66,4 @@ export class User extends CommonEntity {
     cascade: true,
   })
   createdCourses: Course[];
-
-  // 作为学生购买的课程
-  @OneToMany(() => UserCourseProgress, (progress) => progress.user,{
-    cascade: true,
-  })
-  purchasedCourses: UserCourseProgress[];
 }
