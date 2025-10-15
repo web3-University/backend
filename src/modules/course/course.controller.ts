@@ -26,7 +26,7 @@ import {
 } from './swagger-doc';
 
 @ApiTags('课程管理')
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 @Controller('courses')
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}
