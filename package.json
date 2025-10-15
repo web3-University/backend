@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "main": "dist/main.js",
   "scripts": {
-    "dev": "nest start --watch --env-file=.env.development",
+    "dev": "nest start --watch --env-file=.env",
     "start:prod": "node dist/main --env-file=.env.production",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",

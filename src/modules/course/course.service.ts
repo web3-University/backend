@@ -4,7 +4,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, In, Like, Repository, Not, IsNull } from 'typeorm';
+import { Repository, Not, IsNull } from 'typeorm';
 import { Course } from './entities/course.entity';
 import { Lesson } from './entities/lesson.entity';
 import { UserCourseProgress } from './entities/user-course.entity';
@@ -62,7 +62,7 @@ export class CourseService {
     walletAddress: string,
     page: number = 1,
     limit: number = 10,
-  ): Promise<Course[]> {
+  ): Promise<any[]> {
     // 验证用户是否存在
     const user = await this.userRepository.findOne({
       where: { walletAddress },
@@ -72,13 +72,24 @@ export class CourseService {
       throw new NotFoundException(`用户钱包地址 ${walletAddress} 不存在`);
     }
 
-    return await this.courseRepository.find({
+    const courses = await this.courseRepository.find({
       where: { instructorWallet: user.walletAddress },
       order: { createdAt: 'DESC' },
       relations: ['lessons', 'userProgresses'], // 包含关联数据以支持动态计算
       skip: (page - 1) * limit,
       take: limit,
     });
+
+    // 手动添加计算字段，确保 getter 方法的值被包含在返回结果中
+    return courses.map((course) => ({
+      ...course,
+      studentCount: course.studentCount,
+      lessonCount: course.lessonCount,
+      reviewCount: course.reviewCount,
+      purchaseCount: course.purchaseCount,
+      completionCount: course.completionCount,
+      averageRating: course.averageRating,
+    }));
   }
 
   /**
@@ -98,21 +109,69 @@ export class CourseService {
     free?: string;
     priceRange?: string[];
     keyword?: string;
-  }): Promise<Course[]> {
-    const courses = await this.courseRepository.find({
-      order: { createdAt: 'DESC' },
-      where: {
-        categories: categories ? In(categories) : undefined,
-        isFree: free ? free : undefined,
-        price: priceRange ? Between(priceRange[0], priceRange[1]) : undefined,
-        title: keyword ? Like(`%${keyword}%`) : undefined,
-      },
-      relations: ['lessons', 'userProgresses'], // 包含关联数据以支持动态计算
-      // status: COURSE_STATUS.PUBLISHED,
-      skip: (page - 1) * limit,
-      take: limit,
-    });
-    return courses;
+  }): Promise<any[]> {
+    // 构建查询条件
+    const queryBuilder = this.courseRepository
+      .createQueryBuilder('course')
+      .leftJoinAndSelect('course.lessons', 'lessons')
+      .leftJoinAndSelect('course.userProgresses', 'userProgresses')
+      .orderBy('course.createdAt', 'DESC');
+
+    // 分类筛选 - 使用 JSON 包含操作符
+    if (categories?.length) {
+      // 使用 PostgreSQL 的 @> 操作符检查 JSON 数组是否包含任意一个分类
+      // 对于多个分类，检查是否包含其中任意一个
+      const categoryConditions = categories
+        .map(
+          (_, index) => `course.categories::jsonb @> :category${index}::jsonb`,
+        )
+        .join(' OR ');
+      queryBuilder.andWhere(`(${categoryConditions})`, {
+        ...categories.reduce(
+          (acc, category, index) => {
+            acc[`category${index}`] = JSON.stringify([category]);
+            return acc;
+          },
+          {} as Record<string, string>,
+        ),
+      });
+    }
+
+    // 免费/付费筛选
+    if (free !== undefined) {
+      queryBuilder.andWhere('course.isFree = :isFree', { isFree: free });
+    }
+
+    // 价格范围筛选
+    if (priceRange?.length === 2) {
+      queryBuilder.andWhere('course.price BETWEEN :minPrice AND :maxPrice', {
+        minPrice: priceRange[0],
+        maxPrice: priceRange[1],
+      });
+    }
+
+    // 关键词搜索
+    if (keyword) {
+      queryBuilder.andWhere('course.title LIKE :keyword', {
+        keyword: `%${keyword}%`,
+      });
+    }
+
+    // 分页
+    queryBuilder.skip((page - 1) * limit).take(limit);
+
+    const courses = await queryBuilder.getMany();
+
+    // 手动添加计算字段，确保 getter 方法的值被包含在返回结果中
+    return courses.map((course) => ({
+      ...course,
+      studentCount: course.studentCount,
+      lessonCount: course.lessonCount,
+      reviewCount: course.reviewCount,
+      purchaseCount: course.purchaseCount,
+      completionCount: course.completionCount,
+      averageRating: course.averageRating,
+    }));
   }
 
   /**
