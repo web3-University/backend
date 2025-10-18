@@ -15,22 +15,30 @@ export const initSwagger = (
   try {
     logger.log('正在设置 Swagger 文档...', 'Bootstrap');
 
-    const config = new DocumentBuilder()
+    const builder = new DocumentBuilder()
       .setTitle('Web3 University API')
       .setDescription('Web3去中心化教育平台API文档')
       .setVersion('1.0')
-      .addServer(
-        process.env.VERCEL_URL
-          ? `https://${process.env.VERCEL_URL}`
-          : `http://localhost:${process.env.PORT || 3000}`,
-        process.env.VERCEL_URL ? 'Production API' : 'Development API',
-      )
-      .build();
+      .addServer('/', '当前主机');
+
+    if (process.env.VERCEL_URL) {
+      builder.addServer(
+        `https://${process.env.VERCEL_URL}`,
+        'Production API',
+      );
+    } else {
+      builder.addServer(
+        `http://localhost:${process.env.PORT || 3000}`,
+        'Local development',
+      );
+    }
+
+    const config = builder.build();
 
     const document = SwaggerModule.createDocument(app, config);
 
     // 使用自定义Swagger HTML模板
-    const swaggerDocUrl = `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `http://localhost:${process.env.PORT || 3000}`}/${apiPrefix}-json`;
+    const swaggerDocUrl = `/${apiPrefix}-json`;
 
     const templatePath = path.join(__dirname, 'index.html');
     const template = fs.readFileSync(templatePath, 'utf8');

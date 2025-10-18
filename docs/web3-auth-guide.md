@@ -43,11 +43,45 @@ REDIS_DB=0
 APP_DOMAIN=localhost
 ```
 
-### 2. 启动 Redis
+### 2. 启动服务（PostgreSQL + Redis）
+
+本项目使用 Docker Compose 管理数据库和缓存服务：
 
 ```bash
-# 使用 Docker
+# 启动所有服务（PostgreSQL + Redis，后台运行）
 docker-compose up -d
+
+# 查看服务状态
+docker-compose ps
+
+# 查看服务日志
+docker-compose logs -f
+
+# 停止所有服务
+docker-compose down
+
+# 停止服务并删除数据卷（⚠️ 会清空数据库）
+docker-compose down -v
+```
+
+**服务说明：**
+
+- **PostgreSQL**: 端口 `5432`，数据存储在 `./localStoreData/postgres`
+- **Redis**: 端口 `6379`，数据存储在 `./localStoreData/redis`
+
+**环境变量配置：**
+
+在 `.env` 文件中可以自定义端口和密码：
+
+```bash
+# PostgreSQL 配置
+DB_PORT=5432
+DB_DATABASE=w3college
+DB_USERNAME=postgres
+DB_PASSWORD=123456
+
+# Redis 配置
+REDIS_PORT=6379
 ```
 
 ### 3. 运行数据库迁移
@@ -474,11 +508,14 @@ export class CourseController {
 **解决：**
 
 ```bash
-# 启动 Redis
-docker run -d -p 6379:6379 redis:latest
+# 使用 docker-compose 启动 Redis 和 PostgreSQL
+docker-compose up -d
 
-# 或使用 docker-compose
-pnpm run docker:up
+# 检查服务是否正常运行
+docker-compose ps
+
+# 查看 Redis 日志
+docker-compose logs redis
 ```
 
 ---

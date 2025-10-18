@@ -49,6 +49,7 @@ export class CourseService {
     const courseData = {
       ...createCourseDto,
       instructorId: user.userId,
+      instructorWallet: user.walletAddress,
     };
     const course = this.courseRepository.create(courseData);
     const savedCourse = await this.courseRepository.save(course);
@@ -73,7 +74,7 @@ export class CourseService {
     }
 
     const courses = await this.courseRepository.find({
-      where: { instructorId: user.userId },
+      where: { instructorWallet: user.walletAddress },
       order: { createdAt: 'DESC' },
       relations: ['lessons', 'userProgresses'], // 包含关联数据以支持动态计算
       skip: (page - 1) * limit,
@@ -207,7 +208,7 @@ export class CourseService {
     }
     // 验证用户是否购买过该课程
     const userProgress = await this.userCourseProgressRepository.findOne({
-      where: { userId: user.userId, courseId: courseId, isPurchased: true },
+      where: { walletAddress, courseId: courseId, isPurchased: true },
     });
 
     if (!userProgress) {

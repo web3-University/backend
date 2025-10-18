@@ -11,7 +11,7 @@ export class User extends CommonEntity {
   userId: number;
 
   // Web3核心字段 - 钱包地址作为主要标识符
-  @Column({ unique: true })
+  @Column({ unique: false })
   walletAddress: string;
 
   @Column()

@@ -66,7 +66,23 @@ async function bootstrap() {
 
   // CORS配置
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: (origin, callback) => {
+      if (!origin) {
+        return callback(null, true);
+      }
+      // 允许通过环境变量限制来源，默认全部放行
+      const allowedOrigins = (process.env.CORS_ORIGIN || '')
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+      if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`Origin ${origin} not allowed by CORS`), false);
+    },
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
       'Content-Type',
@@ -75,7 +91,7 @@ async function bootstrap() {
       'Accept',
       'X-Requested-With',
     ],
-    credentials: true,
+    exposedHeaders: ['Content-Disposition'],
   });
 
   // Swagger 配置

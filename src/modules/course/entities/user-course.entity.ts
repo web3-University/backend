@@ -31,6 +31,10 @@ export class UserCourseProgress extends CommonEntity {
   @Column()
   userId: number;
 
+  // 钱包地址（冗余存储，方便直接查询）
+  @Column()
+  walletAddress: string;
+
   // 购买相关字段
   @Column({ default: false })
   isPurchased: boolean; // 是否已购买
