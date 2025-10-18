@@ -30,6 +30,10 @@ export class NFTCertificate extends CommonEntity {
   @Column()
   userId: number;
 
+  // 钱包地址（冗余存储，方便直接查询）
+  @Column()
+  walletAddress: string;
+
   // 关联课程ID
   @Column()
   courseId: number;

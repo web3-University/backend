@@ -70,7 +70,7 @@ export class UserService {
 
     // 检查是否已经购买过
     const existingProgress = await this.userCourseProgressRepository.findOne({
-      where: { userId: user.userId, id: courseId },
+      where: { walletAddress, courseId },
     });
 
     if (existingProgress && existingProgress.isPurchased) {
@@ -79,6 +79,7 @@ export class UserService {
 
     // 创建或更新购买记录
     const progressData = {
+      userId: user.userId,
       walletAddress,
       courseId,
       isPurchased: true,
@@ -102,14 +103,8 @@ export class UserService {
    * 获取用户购买的课程
    */
   async getUserPurchasedCourses(walletAddress: string): Promise<Course[]> {
-    // 先获取用户
-    const user = await this.findByWalletAddress(walletAddress);
-    if (!user) {
-      throw new Error(`用户 ${walletAddress} 不存在`);
-    }
-
     const progressRecords = await this.userCourseProgressRepository.find({
-      where: { userId: user.userId, isPurchased: true },
+      where: { walletAddress, isPurchased: true },
       relations: ['course'],
     });
 
@@ -120,14 +115,9 @@ export class UserService {
    * 获取用户正在学习的课程
    */
   async getUserLearningCourses(walletAddress: string): Promise<Course[]> {
-    // 先获取用户
-    const user = await this.findByWalletAddress(walletAddress);
-    if (!user) {
-      throw new Error(`用户 ${walletAddress} 不存在`);
-    }
     const progressRecords = await this.userCourseProgressRepository.find({
       where: {
-        userId: user.userId,
+        walletAddress,
         isPurchased: true,
         status: LEARNING_STATUS.IN_PROGRESS,
       },
@@ -141,14 +131,9 @@ export class UserService {
    * 获取用户已完成的课程
    */
   async getUserCompletedCourses(walletAddress: string): Promise<Course[]> {
-    // 先获取用户
-    const user = await this.findByWalletAddress(walletAddress);
-    if (!user) {
-      throw new Error(`用户 ${walletAddress} 不存在`);
-    }
     const progressRecords = await this.userCourseProgressRepository.find({
       where: {
-        userId: user.userId,
+        walletAddress,
         isPurchased: true,
         status: LEARNING_STATUS.COMPLETED,
       },

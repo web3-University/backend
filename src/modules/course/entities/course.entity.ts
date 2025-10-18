@@ -5,7 +5,6 @@ import {
   OneToMany,
   ManyToOne,
   JoinColumn,
-  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Lesson } from './lesson.entity';
@@ -42,6 +41,10 @@ export class Course extends CommonEntity {
   // 讲师ID
   @Column()
   instructorId: number;
+
+  // 讲师钱包地址（冗余存储，方便直接查询）
+  @Column()
+  instructorWallet: string;
 
   // 课程分类
   @Column({ type: 'json' })

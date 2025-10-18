@@ -158,7 +158,7 @@ export class CertificateService {
 
     // 检查是否已经为该用户和课程创建过证书
     const existingCertificate = await this.certificateRepository.findOne({
-      where: { userId: user.userId, courseId },
+      where: { walletAddress, courseId },
     });
     if (existingCertificate) {
       throw new NotFoundException('该用户已经拥有此课程的证书');
@@ -209,6 +209,7 @@ export class CertificateService {
       tokenId,
       contractAddress: '0x0000000000000000000000000000000000000000', // 占位符，实际部署时替换
       userId: user.userId,
+      walletAddress,
       courseId,
       completionDate: new Date(),
       metadata: metadataUrl,
@@ -225,16 +226,8 @@ export class CertificateService {
    * 获取用户的证书列表
    */
   async getUserCertificates(walletAddress: string): Promise<NFTCertificate[]> {
-    // 先获取用户
-    const user = await this.userRepository.findOne({
-      where: { walletAddress },
-    });
-    if (!user) {
-      throw new NotFoundException(`用户钱包地址 ${walletAddress} 不存在`);
-    }
-
     return await this.certificateRepository.find({
-      where: { userId: user.userId },
+      where: { walletAddress },
       relations: ['course'],
       order: { completionDate: 'DESC' },
     });
