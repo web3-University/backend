@@ -38,6 +38,8 @@ export const initSwagger = (
     const document = SwaggerModule.createDocument(app, config);
 
     // 使用自定义Swagger HTML模板
+    const swaggerDocUrl = `/${apiPrefix}-json`;
+
     const templatePath = path.join(__dirname, 'index.html');
     const template = fs.readFileSync(templatePath, 'utf8');
     const customSwaggerHtml = template.replace(

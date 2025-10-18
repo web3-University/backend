@@ -33,6 +33,14 @@ export class CreateUserDto {
   @IsEmail({}, { message: '邮箱格式不正确' })
   email?: string;
 
+  @ApiProperty({
+    description: '是否是教师',
+    example: false,
+    required: false
+  })
+  @IsOptional()
+  @IsEnum([true, false], { message: 'isInstructorRegistered必须是布尔值' })
+  isInstructorRegistered?: boolean = false;
 
   // @ApiProperty({
   //   description: '用户角色',

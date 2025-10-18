@@ -41,9 +41,9 @@ export class CourseService {
     }
 
     // 验证讲师是否已注册和审核通过
-    if (!user.isInstructorRegistered || !user.isInstructorApproved) {
-      throw new ForbiddenException('讲师需要先注册并通过审核才能创建课程');
-    }
+    // if (!user.isInstructorRegistered || !user.isInstructorApproved) {
+    //   throw new ForbiddenException('讲师需要先注册并通过审核才能创建课程');
+    // }
 
     // 设置讲师信息
     const courseData = {
