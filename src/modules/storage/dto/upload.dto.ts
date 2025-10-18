@@ -82,34 +82,21 @@ export class GeneratePresignedUrlDto {
  */
 export class FileUploadResponseDto {
   @ApiProperty({
-    description: '文件URL',
-    example: 'https://your-bucket.s3.amazonaws.com/avatars/user-123.jpg',
-  })
-  url: string;
-
-  @ApiProperty({
     description: '文件键名',
     example: 'avatars/user-123.jpg',
   })
   key: string;
 
   @ApiProperty({
-    description: '文件大小',
-    example: 1024000,
-  })
-  size: number;
-
-  @ApiProperty({
-    description: '文件类型',
-    example: 'image/jpeg',
-  })
-  contentType: string;
-
-  @ApiProperty({
     description: '上传时间',
     example: '2024-01-01T00:00:00.000Z',
   })
   uploadedAt: Date;
+  @ApiProperty({
+    description: '文件URL',
+    example: 'https://your-bucket.s3.amazonaws.com/avatars/user-123.jpg',
+  })
+  url: string;
 }
 
 /**
