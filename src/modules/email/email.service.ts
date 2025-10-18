@@ -161,4 +161,33 @@ export class EmailService {
   ): Promise<void> {
     await this.sendEmail(to, subject, content, isHtml ? content : undefined);
   }
+
+  // 发送邮箱验证码邮件
+  async sendVerificationCodeEmail(
+    to: string,
+    code: string,
+    username?: string,
+    walletAddress?: string,
+  ): Promise<void> {
+    const displayName = username || this.formatWalletAddress(walletAddress);
+
+    const subject = 'Web3大学邮箱验证码';
+    const text = `亲爱的 ${displayName}，\n\n您的邮箱验证码为：${code}\n验证码将在10分钟后过期，请尽快完成验证。\n\n如果不是您本人操作，请忽略此邮件。\n\nWeb3大学团队`;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2563eb;">邮箱验证码</h2>
+        <p>亲爱的 ${displayName}，</p>
+        <p>您的邮箱验证码为：</p>
+        <div style="font-size: 28px; font-weight: bold; letter-spacing: 8px; color: #2563eb; margin: 16px 0;">
+          ${code}
+        </div>
+        <p>验证码将在 <strong>10 分钟</strong> 后过期，请尽快完成验证。</p>
+        <p>如果不是您本人操作，请忽略此邮件。</p>
+        <p style="margin-top: 32px;">Web3大学团队</p>
+      </div>
+    `;
+
+    await this.sendEmail(to, subject, text, html);
+  }
 }

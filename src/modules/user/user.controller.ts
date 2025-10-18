@@ -3,16 +3,14 @@ import {
   Get,
   Post,
   Body,
-  Param,
   Query,
   UseGuards,
-  BadRequestException,
+  Put,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiParam,
   ApiQuery,
   ApiBody,
 } from '@nestjs/swagger';
@@ -23,6 +21,8 @@ import { User } from './entities/user.entity';
 import { UserCourseProgress } from '../course/entities/user-course.entity';
 import { Course } from '../course/entities/course.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RequestEmailCodeDto } from './dto/request-email-code.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 /**
  * 用户控制器
@@ -67,18 +67,23 @@ export class UserController {
     return this.userService.findByWalletAddress(walletAddress);
   }
 
-  @Get('isRegistered')
-  @ApiOperation({ summary: '判断用户是否注册' })
-  @ApiQuery({ name: 'walletAddress', description: '用户钱包地址' })
-  @ApiResponse({ status: 200, description: '查询成功' })
-  async isRegistered(
-    @Query('walletAddress') walletAddress: string,
-  ): Promise<{ isRegistered: boolean }> {
-    if (!walletAddress)
-      throw new BadRequestException('walletAddress 参数不能为空');
+  @Post('profile/email-code')
+  @ApiOperation({ summary: '发送邮箱验证码' })
+  @ApiResponse({ status: 200, description: '验证码发送成功' })
+  async requestEmailVerificationCode(
+    @Body() requestEmailCodeDto: RequestEmailCodeDto,
+  ): Promise<{ success: boolean; message: string }> {
+    await this.userService.requestEmailVerificationCode(requestEmailCodeDto);
+    return { success: true, message: '验证码已发送' };
+  }
 
-    const isRegistered = await this.userService.isRegistered(walletAddress);
-    return { isRegistered };
+  @Put('profile')
+  @ApiOperation({ summary: '更新用户资料' })
+  @ApiResponse({ status: 200, description: '用户资料更新成功', type: User })
+  async updateProfile(
+    @Body() updateProfileDto: UpdateProfileDto,
+  ): Promise<User> {
+    return this.userService.updateProfile(updateProfileDto);
   }
 
   // 用户购买课程
