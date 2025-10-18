@@ -27,9 +27,10 @@ export class CertificateService {
     courseTitle: string,
     username?: string,
   ): string {
-    const displayName = username || walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
+    const displayName =
+      username || walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
     const completionDate = new Date().toLocaleDateString('zh-CN');
-    
+
     return `
 <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
   <defs>
@@ -42,14 +43,14 @@ export class CertificateService {
       <stop offset="100%" style="stop-color:#f5576c;stop-opacity:1" />
     </linearGradient>
   </defs>
-  
+
   <!-- 背景 -->
   <rect width="800" height="600" fill="url(#bg)" />
-  
+
   <!-- 边框装饰 -->
   <rect x="20" y="20" width="760" height="560" fill="none" stroke="url(#border)" stroke-width="4" rx="20" />
   <rect x="40" y="40" width="720" height="520" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" rx="15" />
-  
+
   <!-- 标题 -->
   <text x="400" y="120" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="36" font-weight="bold">
     Web3大学
@@ -57,33 +58,33 @@ export class CertificateService {
   <text x="400" y="160" text-anchor="middle" fill="rgba(255,255,255,0.9)" font-family="Arial, sans-serif" font-size="24">
     课程完成证书
   </text>
-  
+
   <!-- 证书内容 -->
   <text x="400" y="250" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="18">
     兹证明
   </text>
-  
+
   <text x="400" y="300" text-anchor="middle" fill="#FFD700" font-family="Arial, sans-serif" font-size="28" font-weight="bold">
     ${displayName}
   </text>
-  
+
   <text x="400" y="350" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="18">
     已完成课程
   </text>
-  
+
   <text x="400" y="400" text-anchor="middle" fill="#FFD700" font-family="Arial, sans-serif" font-size="24" font-weight="bold">
     ${courseTitle}
   </text>
-  
+
   <text x="400" y="450" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-family="Arial, sans-serif" font-size="16">
     完成日期：${completionDate}
   </text>
-  
+
   <!-- 底部信息 -->
   <text x="400" y="520" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-family="Arial, sans-serif" font-size="14">
     课程ID: ${courseId} | 钱包地址: ${walletAddress}
   </text>
-  
+
   <!-- 装饰性元素 -->
   <circle cx="150" cy="200" r="30" fill="rgba(255,255,255,0.1)" />
   <circle cx="650" cy="200" r="30" fill="rgba(255,255,255,0.1)" />
@@ -157,7 +158,7 @@ export class CertificateService {
 
     // 检查是否已经为该用户和课程创建过证书
     const existingCertificate = await this.certificateRepository.findOne({
-      where: { walletAddress, courseId },
+      where: { userId: user.userId, courseId },
     });
     if (existingCertificate) {
       throw new NotFoundException('该用户已经拥有此课程的证书');
@@ -173,10 +174,14 @@ export class CertificateService {
 
     // 上传SVG到IPFS
     const svgBuffer = Buffer.from(svgContent, 'utf-8');
-    const svgResult = await this.storageService.uploadToPinata(svgBuffer, 'certificate.svg');
+    const svgResult = await this.storageService.uploadToPinata(
+      svgBuffer,
+      'certificate.svg',
+    );
     const svgUrl = svgResult.gatewayUrl;
 
     // 生成元数据
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const metadata = this.generateMetadata(
       walletAddress,
       courseId,
@@ -186,8 +191,14 @@ export class CertificateService {
     );
 
     // 上传元数据到IPFS
-    const metadataBuffer = Buffer.from(JSON.stringify(metadata, null, 2), 'utf-8');
-    const metadataResult = await this.storageService.uploadToPinata(metadataBuffer, 'metadata.json');
+    const metadataBuffer = Buffer.from(
+      JSON.stringify(metadata, null, 2),
+      'utf-8',
+    );
+    const metadataResult = await this.storageService.uploadToPinata(
+      metadataBuffer,
+      'metadata.json',
+    );
     const metadataUrl = metadataResult.gatewayUrl;
 
     // 生成唯一的tokenId
@@ -197,12 +208,13 @@ export class CertificateService {
     const certificate = this.certificateRepository.create({
       tokenId,
       contractAddress: '0x0000000000000000000000000000000000000000', // 占位符，实际部署时替换
-      walletAddress,
+      userId: user.userId,
       courseId,
       completionDate: new Date(),
       metadata: metadataUrl,
       nftUrl: svgUrl, // 保存NFT预览链接
-      transactionHash: '0x0000000000000000000000000000000000000000000000000000000000000000', // 占位符
+      transactionHash:
+        '0x0000000000000000000000000000000000000000000000000000000000000000', // 占位符
       blockNumber: 0, // 占位符
     });
 
@@ -213,8 +225,16 @@ export class CertificateService {
    * 获取用户的证书列表
    */
   async getUserCertificates(walletAddress: string): Promise<NFTCertificate[]> {
-    return await this.certificateRepository.find({
+    // 先获取用户
+    const user = await this.userRepository.findOne({
       where: { walletAddress },
+    });
+    if (!user) {
+      throw new NotFoundException(`用户钱包地址 ${walletAddress} 不存在`);
+    }
+
+    return await this.certificateRepository.find({
+      where: { userId: user.userId },
       relations: ['course'],
       order: { completionDate: 'DESC' },
     });

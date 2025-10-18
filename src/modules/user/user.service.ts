@@ -70,7 +70,7 @@ export class UserService {
 
     // 检查是否已经购买过
     const existingProgress = await this.userCourseProgressRepository.findOne({
-      where: { walletAddress, id: courseId },
+      where: { userId: user.userId, id: courseId },
     });
 
     if (existingProgress && existingProgress.isPurchased) {
@@ -102,8 +102,14 @@ export class UserService {
    * 获取用户购买的课程
    */
   async getUserPurchasedCourses(walletAddress: string): Promise<Course[]> {
+    // 先获取用户
+    const user = await this.findByWalletAddress(walletAddress);
+    if (!user) {
+      throw new Error(`用户 ${walletAddress} 不存在`);
+    }
+
     const progressRecords = await this.userCourseProgressRepository.find({
-      where: { walletAddress, isPurchased: true },
+      where: { userId: user.userId, isPurchased: true },
       relations: ['course'],
     });
 
@@ -114,9 +120,14 @@ export class UserService {
    * 获取用户正在学习的课程
    */
   async getUserLearningCourses(walletAddress: string): Promise<Course[]> {
+    // 先获取用户
+    const user = await this.findByWalletAddress(walletAddress);
+    if (!user) {
+      throw new Error(`用户 ${walletAddress} 不存在`);
+    }
     const progressRecords = await this.userCourseProgressRepository.find({
       where: {
-        walletAddress,
+        userId: user.userId,
         isPurchased: true,
         status: LEARNING_STATUS.IN_PROGRESS,
       },
@@ -130,9 +141,14 @@ export class UserService {
    * 获取用户已完成的课程
    */
   async getUserCompletedCourses(walletAddress: string): Promise<Course[]> {
+    // 先获取用户
+    const user = await this.findByWalletAddress(walletAddress);
+    if (!user) {
+      throw new Error(`用户 ${walletAddress} 不存在`);
+    }
     const progressRecords = await this.userCourseProgressRepository.find({
       where: {
-        walletAddress,
+        userId: user.userId,
         isPurchased: true,
         status: LEARNING_STATUS.COMPLETED,
       },
