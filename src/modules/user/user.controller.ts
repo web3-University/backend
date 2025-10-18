@@ -3,15 +3,14 @@ import {
   Get,
   Post,
   Body,
-  Param,
   Query,
   UseGuards,
+  Put,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiParam,
   ApiQuery,
   ApiBody,
 } from '@nestjs/swagger';
@@ -22,6 +21,8 @@ import { User } from './entities/user.entity';
 import { UserCourseProgress } from '../course/entities/user-course.entity';
 import { Course } from '../course/entities/course.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RequestEmailCodeDto } from './dto/request-email-code.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 /**
  * 用户控制器
@@ -64,6 +65,25 @@ export class UserController {
     @Query('walletAddress') walletAddress: string,
   ): Promise<User | null> {
     return this.userService.findByWalletAddress(walletAddress);
+  }
+
+  @Post('profile/email-code')
+  @ApiOperation({ summary: '发送邮箱验证码' })
+  @ApiResponse({ status: 200, description: '验证码发送成功' })
+  async requestEmailVerificationCode(
+    @Body() requestEmailCodeDto: RequestEmailCodeDto,
+  ): Promise<{ success: boolean; message: string }> {
+    await this.userService.requestEmailVerificationCode(requestEmailCodeDto);
+    return { success: true, message: '验证码已发送' };
+  }
+
+  @Put('profile')
+  @ApiOperation({ summary: '更新用户资料' })
+  @ApiResponse({ status: 200, description: '用户资料更新成功', type: User })
+  async updateProfile(
+    @Body() updateProfileDto: UpdateProfileDto,
+  ): Promise<User> {
+    return this.userService.updateProfile(updateProfileDto);
   }
 
   // 用户购买课程
