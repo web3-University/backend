@@ -46,6 +46,14 @@ export class UserService {
   }
 
   /**
+   * 判断用户是否已注册
+   */
+  async isRegistered(walletAddress: string): Promise<boolean> {
+    const user = await this.findByWalletAddress(walletAddress);
+    return !!user;
+  }
+
+  /**
    * 用户购买课程
    */
   async purchaseCourse(

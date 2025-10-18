@@ -6,6 +6,7 @@ import {
   Param,
   Query,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -28,7 +29,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
  * 处理用户相关的HTTP请求
  */
 @ApiTags('用户管理')
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -64,6 +65,20 @@ export class UserController {
     @Query('walletAddress') walletAddress: string,
   ): Promise<User | null> {
     return this.userService.findByWalletAddress(walletAddress);
+  }
+
+  @Get('isRegistered')
+  @ApiOperation({ summary: '判断用户是否注册' })
+  @ApiQuery({ name: 'walletAddress', description: '用户钱包地址' })
+  @ApiResponse({ status: 200, description: '查询成功' })
+  async isRegistered(
+    @Query('walletAddress') walletAddress: string,
+  ): Promise<{ isRegistered: boolean }> {
+    if (!walletAddress)
+      throw new BadRequestException('walletAddress 参数不能为空');
+
+    const isRegistered = await this.userService.isRegistered(walletAddress);
+    return { isRegistered };
   }
 
   // 用户购买课程
