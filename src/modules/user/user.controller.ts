@@ -6,6 +6,7 @@ import {
   Query,
   UseGuards,
   Put,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -65,6 +66,21 @@ export class UserController {
     @Query('walletAddress') walletAddress: string,
   ): Promise<User | null> {
     return this.userService.findByWalletAddress(walletAddress);
+  }
+
+  @Get('isRegistered')
+  @ApiOperation({ summary: '判断用户是否注册' })
+  @ApiQuery({ name: 'walletAddress', description: '钱包地址' })
+  @ApiResponse({ status: 200, description: '查询成功' })
+  async isRegistered(
+    @Query('walletAddress') walletAddress: string,
+  ): Promise<{ isRegistered: boolean }> {
+    if (!walletAddress) {
+      throw new BadRequestException('walletAddress 参数不能为空');
+    }
+
+    const isRegistered = await this.userService.isRegistered(walletAddress);
+    return { isRegistered };
   }
 
   @Post('profile/email-code')

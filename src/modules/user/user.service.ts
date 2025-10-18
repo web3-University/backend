@@ -53,6 +53,14 @@ export class UserService {
   }
 
   /**
+   * 判断用户是否已注册
+   */
+  async isRegistered(walletAddress: string): Promise<boolean> {
+    const user = await this.findByWalletAddress(walletAddress);
+    return !!user;
+  }
+
+  /**
    * 请求发送邮箱验证码
    */
   async requestEmailVerificationCode(
