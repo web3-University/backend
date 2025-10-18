@@ -12,6 +12,11 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { UserCourseProgress } from '../course/entities/user-course.entity';
 import { Course } from '../course/entities/course.entity';
+import { LearningStatsResponseDto } from './dto/learning-stats-response.dto';
+import { LearningOverviewResponseDto } from './dto/learning-overview-response.dto';
+import { WeeklyProgressResponseDto } from './dto/weekly-progress-response.dto';
+import { AchievementResponseDto } from './dto/achievement-response.dto';
+import { RecentActivityResponseDto } from './dto/recent-activity-response.dto';
 
 /**
  * 用户控制器
@@ -125,5 +130,80 @@ export class UserController {
     @Query('walletAddress') walletAddress: string,
   ): Promise<Course[]> {
     return this.userService.getUserCompletedCourses(walletAddress);
+  }
+
+  // 获取用户学习统计
+  @Get('learningStats')
+  @ApiOperation({ summary: '获取用户学习统计概览' })
+  @ApiQuery({ name: 'walletAddress', description: '用户钱包地址' })
+  @ApiResponse({
+    status: 200,
+    description: '统计获取成功',
+    type: LearningStatsResponseDto,
+  })
+  getLearningStats(
+    @Query('walletAddress') walletAddress: string,
+  ): Promise<LearningStatsResponseDto> {
+    return this.userService.getLearningStats(walletAddress);
+  }
+
+  // 学习概览
+  @Get('learningOverview')
+  @ApiOperation({ summary: '学习概览统计测试' })
+  @ApiQuery({ name: 'walletAddress', description: '用户钱包地址' })
+  @ApiResponse({
+    status: 200,
+    description: '学习概览获取成功',
+    type: LearningOverviewResponseDto,
+  })
+  getLearningOverview(
+    @Query('walletAddress') walletAddress: string,
+  ): Promise<LearningOverviewResponseDto> {
+    return this.userService.getLearningOverview(walletAddress);
+  }
+
+  // 周学习进度
+  @Get('weeklyProgress')
+  @ApiOperation({ summary: '周学习进度统计测试' })
+  @ApiQuery({ name: 'walletAddress', description: '用户钱包地址' })
+  @ApiResponse({
+    status: 200,
+    description: '周学习进度获取成功',
+    type: WeeklyProgressResponseDto,
+  })
+  getWeeklyProgress(
+    @Query('walletAddress') walletAddress: string,
+  ): Promise<WeeklyProgressResponseDto> {
+    return this.userService.getWeeklyProgress(walletAddress);
+  }
+
+  // 成就中心
+  @Get('achievements')
+  @ApiOperation({ summary: '学习成就列表测试' })
+  @ApiQuery({ name: 'walletAddress', description: '用户钱包地址' })
+  @ApiResponse({
+    status: 200,
+    description: '成就列表获取成功',
+    type: AchievementResponseDto,
+  })
+  getAchievements(
+    @Query('walletAddress') walletAddress: string,
+  ): Promise<AchievementResponseDto> {
+    return this.userService.getAchievements(walletAddress);
+  }
+
+  // 最近学习记录
+  @Get('recentActivities')
+  @ApiOperation({ summary: '最近学习记录测试' })
+  @ApiQuery({ name: 'walletAddress', description: '用户钱包地址' })
+  @ApiResponse({
+    status: 200,
+    description: '最近学习记录获取成功',
+    type: RecentActivityResponseDto,
+  })
+  getRecentActivities(
+    @Query('walletAddress') walletAddress: string,
+  ): Promise<RecentActivityResponseDto> {
+    return this.userService.getRecentActivities(walletAddress);
   }
 }

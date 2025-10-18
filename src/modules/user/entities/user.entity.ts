@@ -52,6 +52,10 @@ export class User extends CommonEntity {
   @Column({ default: false })
   isInstructorApproved: boolean;
 
+  // 平台代币余额（YD币）
+  @Column({ type: 'varchar', length: 50, default: '0' })
+  ydBalance: string;
+
   // 关联关系
   // 用户课程关系记录（包含购买和学习进度）
   @OneToMany(() => UserCourseProgress, (progress) => progress.user, {
