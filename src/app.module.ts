@@ -15,6 +15,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware';
 import { AppLoggerService } from './common/services/logger.service';
 import { AuthModule } from './modules/auth/auth.module';
+import { DAOModule } from './modules/dao/dao.module';
 
 /**
  * 应用主模块
@@ -57,6 +58,7 @@ import { AuthModule } from './modules/auth/auth.module';
     CertificateModule,
     EmailModule,
     PerformanceModule,
+    DAOModule,
   ],
 })
 export class AppModule implements NestModule {
