@@ -11,7 +11,7 @@ import {
 } from './swagger-doc';
 
 @ApiTags('NFT证书管理')
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 @Controller('certificates')
 export class CertificateController {
   constructor(private readonly certificateService: CertificateService) {}

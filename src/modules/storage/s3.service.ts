@@ -45,6 +45,7 @@ export class S3Service {
         Key: key,
         Body: file.buffer,
         ContentType: file.mimetype,
+        ACL: 'public-read',                // 新增
         Metadata: {
           originalName: file.originalname,
           uploadedAt: new Date().toISOString(),
