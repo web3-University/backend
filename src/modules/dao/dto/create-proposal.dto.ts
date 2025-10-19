@@ -27,7 +27,7 @@ export class CreateProposalDto {
     maxLength: 500,
   })
   @IsString()
-  @Length(10, 500, { message: '发起原因长度必须在10-500字符之间' })
+  // @Length(10, 500, { message: '发起原因长度必须在10-500字符之间' })
   reason: string;
 
   @ApiProperty({

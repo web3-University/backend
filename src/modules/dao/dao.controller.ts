@@ -33,7 +33,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
  */
 @ApiTags('DAO - 课程质量投票')
 @Controller('dao')
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 export class DAOController {
   constructor(private readonly daoService: DAOService) {}
 
