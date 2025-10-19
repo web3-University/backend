@@ -58,7 +58,7 @@ export class UserService {
    * 更新用户资料
    */
   async updateProfile(updateProfileDto: UpdateProfileDto): Promise<User> {
-    const { walletAddress, username, avatar, bio } = updateProfileDto;
+    const { walletAddress, username, avatar, bio, email } = updateProfileDto;
 
     const user = await this.findByWalletAddress(walletAddress);
     if (!user) {
@@ -66,8 +66,15 @@ export class UserService {
     }
 
     user.username = username;
-    user.avatar = avatar;
-    user.bio = bio ?? user.bio;
+    if (avatar !== undefined) {
+      user.avatar = avatar;
+    }
+    if (bio !== undefined) {
+      user.bio = bio;
+    }
+    if (email !== undefined) {
+      user.email = email;
+    }
 
     return await this.userRepository.save(user);
   }
