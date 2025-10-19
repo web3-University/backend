@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
@@ -6,10 +6,7 @@ import { Repository } from 'typeorm';
 import { UserCourseProgress } from '../course/entities/user-course.entity';
 import { Course } from '../course/entities/course.entity';
 import { LEARNING_STATUS } from '../../config/constant';
-import { RequestEmailCodeDto } from './dto/request-email-code.dto';
-import { EmailVerification } from './entities/email-verification.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { EmailService } from '../email/email.service';
 
 /**
  * 用户服务类
@@ -24,9 +21,6 @@ export class UserService {
     private userCourseProgressRepository: Repository<UserCourseProgress>,
     @InjectRepository(Course)
     private courseRepository: Repository<Course>,
-    @InjectRepository(EmailVerification)
-    private emailVerificationRepository: Repository<EmailVerification>,
-    private readonly emailService: EmailService,
   ) {}
 
   /**
@@ -61,92 +55,21 @@ export class UserService {
   }
 
   /**
-   * 请求发送邮箱验证码
-   */
-  async requestEmailVerificationCode(
-    requestEmailCodeDto: RequestEmailCodeDto,
-  ): Promise<void> {
-    const { walletAddress, email } = requestEmailCodeDto;
-    const user = await this.findByWalletAddress(walletAddress);
-    if (!user) {
-      throw new NotFoundException(`用户 ${walletAddress} 不存在`);
-    }
-
-    const latestCode = await this.emailVerificationRepository.findOne({
-      where: { walletAddress, email },
-      order: { createdAt: 'DESC' },
-    });
-
-    if (
-      latestCode &&
-      !latestCode.used &&
-      latestCode.expiresAt.getTime() > Date.now() &&
-      Date.now() - latestCode.createdAt.getTime() < 60 * 1000
-    ) {
-      throw new BadRequestException('验证码已发送，请稍后再试');
-    }
-
-    const code = Math.floor(1000 + Math.random() * 9000)
-      .toString()
-      .padStart(4, '0');
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-    await this.emailVerificationRepository.save({
-      walletAddress,
-      email,
-      code,
-      expiresAt,
-      used: false,
-    });
-
-    await this.emailService.sendVerificationCodeEmail(
-      email,
-      code,
-      user.username,
-      user.walletAddress,
-    );
-  }
-
-  /**
    * 更新用户资料
    */
   async updateProfile(updateProfileDto: UpdateProfileDto): Promise<User> {
-    const { walletAddress, username, avatar, email, verificationCode } =
-      updateProfileDto;
+    const { walletAddress, username, avatar, bio } = updateProfileDto;
 
     const user = await this.findByWalletAddress(walletAddress);
     if (!user) {
       throw new NotFoundException(`用户 ${walletAddress} 不存在`);
     }
 
-    const verificationRecord = await this.emailVerificationRepository.findOne({
-      where: {
-        walletAddress,
-        email,
-        code: verificationCode,
-        used: false,
-      },
-      order: { createdAt: 'DESC' },
-    });
-
-    if (!verificationRecord) {
-      throw new BadRequestException('验证码无效，请重新获取');
-    }
-
-    if (verificationRecord.expiresAt.getTime() < Date.now()) {
-      throw new BadRequestException('验证码已过期，请重新获取');
-    }
-
     user.username = username;
-    user.email = email;
     user.avatar = avatar;
+    user.bio = bio ?? user.bio;
 
-    const updatedUser = await this.userRepository.save(user);
-
-    verificationRecord.used = true;
-    await this.emailVerificationRepository.save(verificationRecord);
-
-    return updatedUser;
+    return await this.userRepository.save(user);
   }
 
   /**

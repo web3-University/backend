@@ -1,12 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  IsUrl,
-  Length,
-} from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class UpdateProfileDto {
   @ApiProperty({
@@ -35,18 +28,11 @@ export class UpdateProfileDto {
   avatar?: string;
 
   @ApiProperty({
-    description: '邮箱地址',
-    example: 'user@example.com',
+    description: '个人简介',
+    example: 'Web3 爱好者',
+    required: false,
   })
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
-
-  @ApiProperty({
-    description: '邮箱验证码，四位数字',
-    example: '1234',
-  })
+  @IsOptional()
   @IsString()
-  @Length(4, 4)
-  verificationCode: string;
+  bio?: string;
 }
