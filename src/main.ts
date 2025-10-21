@@ -107,7 +107,7 @@ async function bootstrap() {
     logger.log(`🌐 环境: ${process.env.NODE_ENV || 'production'}`, 'Bootstrap');
     logger.log(`🔗 API前缀: /${apiPrefix}`, 'Bootstrap');
     return app;
-  } 
+  }
 
   // 本地开发环境启动服务器
   const port = process.env.PORT || 3000;

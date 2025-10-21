@@ -1,6 +1,13 @@
-import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
+import {
+  Module,
+  MiddlewareConsumer,
+  NestModule,
+  // RequestMethod,
+} from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
+import { HelmetMiddleware } from '@nest-middlewares/helmet';
+
 import { UserModule } from './modules/user/user.module';
 import { CourseModule } from './modules/course/course.module';
 import { StorageModule } from './modules/storage/storage.module';
@@ -65,5 +72,12 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     // 应用请求日志中间件到所有路由
     consumer.apply(RequestLoggerMiddleware).forRoutes('*');
+
+    // 添加helmet防护，可以查看docs/helmet.md
+    consumer
+      .apply(HelmetMiddleware)
+      // 放开某些接口时候配置
+      // .exclude({ path: 'upload/chunk', method: RequestMethod.POST })
+      .forRoutes('*');
   }
 }
