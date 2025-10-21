@@ -39,6 +39,7 @@ lerna-debug.log*
 .env
 .env.production
 .env.vercel
+*.crt
 
 # Vercel
 .vercel

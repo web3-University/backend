@@ -1,11 +1,18 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+
+const sslCertPath = path.resolve(__dirname, 'supabase-ssl.crt');
 
 /**
  * 数据库配置工厂函数
  * 从环境变量中读取数据库配置信息
  */
-export const createDatabaseConfig = (configService: ConfigService): TypeOrmModuleOptions => ({
+export const createDatabaseConfig = (
+  configService: ConfigService,
+): TypeOrmModuleOptions => ({
   type: 'postgres',
   host: configService.get<string>('DB_HOST', 'localhost'),
   port: configService.get<number>('DB_PORT', 5432),
@@ -18,4 +25,8 @@ export const createDatabaseConfig = (configService: ConfigService): TypeOrmModul
   migrations: [__dirname + '/migrations/*{.ts,.js}'],
   migrationsRun: false,
   autoLoadEntities: true,
+  ssl: {
+    ca: fs.readFileSync(sslCertPath),
+    rejectUnauthorized: true,
+  },
 });

@@ -23,6 +23,7 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
 import { AppLoggerService } from './common/services/logger.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { DAOModule } from './modules/dao/dao.module';
+import { SupabaseTestModule } from './modules/supabase-test/supabase-test.module';
 
 /**
  * 应用主模块
@@ -66,6 +67,7 @@ import { DAOModule } from './modules/dao/dao.module';
     EmailModule,
     PerformanceModule,
     DAOModule,
+    SupabaseTestModule,
   ],
 })
 export class AppModule implements NestModule {

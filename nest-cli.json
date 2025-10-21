@@ -4,11 +4,13 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "deleteOutDir": true,
+    "watchAssets": true,
     "assets": [
       {
         "include": "**/*.html",
         "watchAssets": true
-      }
+      },
+      { "include": "config/*.crt", "outDir": "dist" }
     ]
   }
 }
