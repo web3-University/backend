@@ -66,3 +66,10 @@ layer/
 .claude/
 
 dist
+
+uploads/
+uploads/chunks/
+uploads/tmp/
+dist/uploads/
+**/uploads/
+*.bin

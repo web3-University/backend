@@ -85,31 +85,32 @@ export class FileUploadResponseDto {
     description: '文件URL',
     example: 'https://your-bucket.s3.amazonaws.com/avatars/user-123.jpg',
   })
-  url: string;
+  url: string|null;
+  message?:string;
 
   @ApiProperty({
     description: '文件键名',
     example: 'avatars/user-123.jpg',
   })
-  key: string;
+  key?: string;
 
   @ApiProperty({
     description: '文件大小',
     example: 1024000,
   })
-  size: number;
+  size?: number;
 
   @ApiProperty({
     description: '文件类型',
     example: 'image/jpeg',
   })
-  contentType: string;
+  contentType?: string;
 
   @ApiProperty({
     description: '上传时间',
     example: '2024-01-01T00:00:00.000Z',
   })
-  uploadedAt: Date;
+  uploadedAt?: Date;
 }
 
 /**
