@@ -68,3 +68,9 @@ layer/
 
 dist
 .vercel
+uploads/
+uploads/chunks/
+uploads/tmp/
+dist/uploads/
+**/uploads/
+*.bin
