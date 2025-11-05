@@ -11,18 +11,21 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { createS3Client, s3Config } from './config/s3.config';
-import { FileUploadResponseDto, PresignedUrlResponseDto } from './dto/upload.dto';
+import { FileType, FileUploadResponseDto, PresignedUrlResponseDto } from './dto/upload.dto';
 import * as crypto from 'crypto';
 import * as path from 'path';
 @Injectable()
 export class S3Service {
+  generatePresignedUploadUrl(fileType: FileType, fileName: string, contentType: string): PresignedUrlResponseDto | PromiseLike<PresignedUrlResponseDto> {
+    throw new Error('Method not implemented.');
+  }
   private s3Client: S3Client;
 
   constructor() {
     this.s3Client = createS3Client();
   }
 
-  async uploadFile(file: Express.Multer.File): Promise<FileUploadResponseDto> {
+  async uploadFile(file: Express.Multer.File, fileType: any): Promise<FileUploadResponseDto> {
     try {
       // 验证文件类型
       if (!s3Config.allowedFileTypes.includes(file.mimetype)) {

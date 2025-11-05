@@ -14,6 +14,18 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
  */
 @Injectable()
 export class UserService {
+  getLearningOverview(walletAddress: string): Promise<import("./dto/learning-overview-response.dto").LearningOverviewResponseDto> {
+    throw new Error('Method not implemented.');
+  }
+  getWeeklyProgress(walletAddress: string): Promise<import("./dto/weekly-progress-response.dto").WeeklyProgressResponseDto> {
+    throw new Error('Method not implemented.');
+  }
+  getAchievements(walletAddress: string): Promise<import("./dto/achievement-response.dto").AchievementResponseDto> {
+    throw new Error('Method not implemented.');
+  }
+  getRecentActivities(walletAddress: string): Promise<import("./dto/recent-activity-response.dto").RecentActivityResponseDto> {
+    throw new Error('Method not implemented.');
+  }
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,

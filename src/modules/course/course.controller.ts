@@ -6,8 +6,9 @@ import {
   Query,
   ParseIntPipe,
   UseGuards,
+  DefaultValuePipe,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CourseService } from './course.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { CreateLessonDto } from './dto/create-lesson.dto';
@@ -24,6 +25,12 @@ import {
   getCourseLessonsApiDoc,
   getLessonApiDoc,
 } from './swagger-doc';
+import { CourseMarketStatsResponseDto } from './dto/course-market-stats-response.dto';
+import { CourseMarketFiltersResponseDto } from './dto/course-market-filters-response.dto';
+import {
+  CourseHighlightResponseDto,
+} from './dto/course-highlight-response.dto';
+import { InstructorDashboardResponseDto } from './dto/instructor-dashboard-response.dto';
 
 @ApiTags('课程管理')
 // @UseGuards(JwtAuthGuard)
@@ -111,5 +118,84 @@ export class CourseController {
   @getLessonApiDoc()
   async getLesson(@Query('lessonId') lessonId: string): Promise<Lesson> {
     return await this.courseService.getLesson(+lessonId);
+  }
+
+  // 课程市场统计
+  @Get('market/stats')
+  @ApiOperation({ summary: '课程市场统计测试' })
+  @ApiResponse({
+    status: 200,
+    description: '课程市场统计获取成功',
+    type: CourseMarketStatsResponseDto,
+  })
+  async getMarketStats(): Promise<CourseMarketStatsResponseDto> {
+    return await this.courseService.getCourseMarketStats();
+  }
+
+  // 课程市场筛选项
+  @Get('market/filters')
+  @ApiOperation({ summary: '课程市场筛选项测试' })
+  @ApiResponse({
+    status: 200,
+    description: '课程筛选项获取成功',
+    type: CourseMarketFiltersResponseDto,
+  })
+  async getMarketFilters(): Promise<CourseMarketFiltersResponseDto> {
+    return await this.courseService.getCourseMarketFilters();
+  }
+
+  // 精选课程
+  @Get('market/featured')
+  @ApiOperation({ summary: '精选课程列表测试' })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: '返回的课程数量，默认6',
+    type: Number,
+  })
+  @ApiResponse({
+    status: 200,
+    description: '精选课程获取成功',
+    type: CourseHighlightResponseDto,
+  })
+  async getFeaturedCourses(
+    @Query('limit', new DefaultValuePipe(6), ParseIntPipe) limit: number,
+  ): Promise<CourseHighlightResponseDto> {
+    return await this.courseService.getFeaturedCourses(limit);
+  }
+
+  // 热门课程
+  @Get('market/trending')
+  @ApiOperation({ summary: '热门课程列表测试' })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: '返回的课程数量，默认6',
+    type: Number,
+  })
+  @ApiResponse({
+    status: 200,
+    description: '热门课程获取成功',
+    type: CourseHighlightResponseDto,
+  })
+  async getTrendingCourses(
+    @Query('limit', new DefaultValuePipe(6), ParseIntPipe) limit: number,
+  ): Promise<CourseHighlightResponseDto> {
+    return await this.courseService.getTrendingCourses(limit);
+  }
+
+  // 讲师中心概览
+  @Get('instructor/dashboard')
+  @ApiOperation({ summary: '讲师中心概览测试' })
+  @ApiQuery({ name: 'walletAddress', description: '讲师钱包地址' })
+  @ApiResponse({
+    status: 200,
+    description: '讲师中心概览获取成功',
+    type: InstructorDashboardResponseDto,
+  })
+  async getInstructorDashboard(
+    @Query('walletAddress') walletAddress: string,
+  ): Promise<InstructorDashboardResponseDto> {
+    return await this.courseService.getInstructorDashboard(walletAddress);
   }
 }

@@ -67,7 +67,11 @@ layer/
 .claude/
 
 dist
+<<<<<<< HEAD
 .vercel
+=======
+
+>>>>>>> feature/cy
 uploads/
 uploads/chunks/
 uploads/tmp/
