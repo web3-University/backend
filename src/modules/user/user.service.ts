@@ -14,6 +14,9 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
  */
 @Injectable()
 export class UserService {
+  getLearningStats(walletAddress: string): Promise<import("./dto/learning-stats-response.dto").LearningStatsResponseDto> {
+    throw new Error('Method not implemented.');
+  }
   getLearningOverview(walletAddress: string): Promise<import("./dto/learning-overview-response.dto").LearningOverviewResponseDto> {
     throw new Error('Method not implemented.');
   }
