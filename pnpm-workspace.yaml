@@ -1,9 +1,5 @@
 packages:
   - '.'
-<<<<<<< HEAD
-
-=======
->>>>>>> feature/cy
 onlyBuiltDependencies:
   - '@nestjs/core'
   - '@scarf/scarf'
