@@ -11,21 +11,36 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { createS3Client, s3Config } from './config/s3.config';
-import { FileType, FileUploadResponseDto, PresignedUrlResponseDto } from './dto/upload.dto';
+import {
+  FileType,
+  FileUploadResponseDto,
+  PresignedUrlResponseDto,
+} from './dto/upload.dto';
 import * as crypto from 'crypto';
 import * as path from 'path';
 @Injectable()
 export class S3Service {
-  generatePresignedUploadUrl(fileType: FileType, fileName: string, contentType: string): PresignedUrlResponseDto | PromiseLike<PresignedUrlResponseDto> {
+  generatePresignedUploadUrl(
+    fileType: FileType,
+    fileName: string,
+    contentType: string,
+  ): PresignedUrlResponseDto | PromiseLike<PresignedUrlResponseDto> {
     throw new Error('Method not implemented.');
   }
   private s3Client: S3Client;
 
   constructor() {
+    console.log('❤️ 当前使用的 Key =', process.env.AWS_ACCESS_KEY_ID);
+    console.log('❤️ 当前使用的 Secret =', process.env.AWS_SECRET_ACCESS_KEY);
+    console.log('❤️ 当前使用的 Region =', process.env.AWS_REGION);
+    console.log('❤️ 当前使用的 Bucket =', process.env.AWS_S3_BUCKET_NAME);
     this.s3Client = createS3Client();
   }
 
-  async uploadFile(file: Express.Multer.File, fileType: any): Promise<FileUploadResponseDto> {
+  async uploadFile(
+    file: Express.Multer.File,
+    fileType: any,
+  ): Promise<FileUploadResponseDto> {
     try {
       // 验证文件类型
       if (!s3Config.allowedFileTypes.includes(file.mimetype)) {
@@ -34,7 +49,9 @@ export class S3Service {
 
       // 验证文件大小
       if (file.size > s3Config.maxFileSize) {
-        throw new BadRequestException(`文件大小超过限制: ${s3Config.maxFileSize} bytes`);
+        throw new BadRequestException(
+          `文件大小超过限制: ${s3Config.maxFileSize} bytes`,
+        );
       }
 
       // 生成唯一文件名
@@ -48,7 +65,7 @@ export class S3Service {
         Key: key,
         Body: file.buffer,
         ContentType: file.mimetype,
-        ACL: 'public-read',                // 新增
+        // ACL: 'public-read',                // 新增
         Metadata: {
           originalName: file.originalname,
           uploadedAt: new Date().toISOString(),
@@ -83,14 +100,19 @@ export class S3Service {
     }
   }
 
-  async getPresignedUrl(key: string, expiresIn: number = 3600): Promise<PresignedUrlResponseDto> {
+  async getPresignedUrl(
+    key: string,
+    expiresIn: number = 3600,
+  ): Promise<PresignedUrlResponseDto> {
     try {
       const command = new GetObjectCommand({
         Bucket: s3Config.bucketName,
         Key: key,
       });
 
-      const presignedUrl = await getSignedUrl(this.s3Client, command, { expiresIn });
+      const presignedUrl = await getSignedUrl(this.s3Client, command, {
+        expiresIn,
+      });
 
       return {
         uploadUrl: presignedUrl,
@@ -99,7 +121,9 @@ export class S3Service {
         expiresIn,
       };
     } catch (error) {
-      throw new InternalServerErrorException(`生成预签名URL失败: ${error.message}`);
+      throw new InternalServerErrorException(
+        `生成预签名URL失败: ${error.message}`,
+      );
     }
   }
 

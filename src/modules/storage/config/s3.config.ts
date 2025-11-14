@@ -37,7 +37,7 @@ export const s3Config = {
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   ],
-  maxFileSize: 10 * 1024 * 1024,
+  maxFileSize: 1024 * 1024 * 1024,
 };
 
 function ensureValue(name: string, value: string): void {
@@ -53,6 +53,9 @@ export function validateS3Config(): void {
 }
 
 export function createS3Client(): S3Client {
+  console.log('🚀 最终用于 S3Client 的 Region =', s3Config.region);
+  console.log('🚀 最终用于 S3Client 的 AccessKey =', s3Config.accessKeyId);
+  console.log('🚀 最终用于 S3Client 的 Bucket =', s3Config.bucketName);
   validateS3Config();
   return new S3Client({
     region: s3Config.region,

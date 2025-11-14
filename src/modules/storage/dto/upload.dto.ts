@@ -85,8 +85,8 @@ export class FileUploadResponseDto {
     description: '文件URL',
     example: 'https://your-bucket.s3.amazonaws.com/avatars/user-123.jpg',
   })
-  url: string|null;
-  message?:string;
+  url: string | null;
+  message?: string;
 
   @ApiProperty({
     description: '文件键名',
@@ -110,7 +110,7 @@ export class FileUploadResponseDto {
     description: '上传时间',
     example: '2024-01-01T00:00:00.000Z',
   })
-  uploadedAt?: Date;
+  uploadedAt?: Date | null;
 }
 
 /**
